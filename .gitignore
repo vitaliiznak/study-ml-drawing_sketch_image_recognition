@@ -1,0 +1,8 @@
+**/.DS_Store
+**/node_modules
+common/data/dataset
+common/data/raw
+
+
+# But not .gitkeep
+!.gitkeep

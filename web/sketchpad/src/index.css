@@ -1,0 +1,10 @@
+body {
+  font-family: Arial;
+  background-color: skyblue;
+  overscroll-behavior: none;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
