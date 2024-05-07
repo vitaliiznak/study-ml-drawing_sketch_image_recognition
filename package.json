@@ -1,0 +1,16 @@
+{
+  "name": "study_ml_drawing_sketch_image_recognition",
+  "version": "1.0.0",
+  "main": "index.js",
+
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

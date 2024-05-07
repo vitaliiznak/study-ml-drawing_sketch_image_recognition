@@ -1,0 +1,21 @@
+{
+
+  "scripts": {
+    "dev": "node ./index.mjs",
+    "build": "",
+    "dataset-generator": "node dataset_generator.mjs",
+    "lint": "eslint ."
+  },
+
+  "dependencies": {
+
+    "canvas": "^2.11.2",
+
+    "cors": "^2.8.5",
+
+    "express": "^4.19.2"
+
+  }
+
+}
+

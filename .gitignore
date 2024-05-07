@@ -1,7 +1,9 @@
 **/.DS_Store
 **/node_modules
-common/data/dataset
-common/data/raw
+apps/api_data_visualizer/data/dataset/img/
+apps/api_data_visualizer/data/dataset/json/
+# apps/api_data_visualizer/data/raw/
+
 
 
 # But not .gitkeep
