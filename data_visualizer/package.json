@@ -1,9 +1,0 @@
-{
-
-  "scripts": {
-    "generate-dataset": "node ./dataset_generator.mjs"
-  },
-  "dependencies": {
-    "canvas": "^2.11.2"
-  }
-}
