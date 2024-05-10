@@ -1,8 +1,7 @@
 **/.DS_Store
 **/node_modules
-apps/api_data_visualizer/data/dataset/img/
-apps/api_data_visualizer/data/dataset/json/
-# apps/api_data_visualizer/data/raw/
+packages/shared_data/dataset/
+packages/shared_data/json_objects/
 
 
 

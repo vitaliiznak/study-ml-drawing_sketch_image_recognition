@@ -1,9 +1,12 @@
 import { createResource, type Component } from "solid-js";
 import { css } from "@emotion/css";
 
+
+const BASE_URL = `http://localhost:3080`
+
 const fetchAndGroupMatadateByUser = async () => {
   const response = await fetch(
-    `http://localhost:3080/json_objects/samples.json`
+    `${BASE_URL}/json_objects/samples.json`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch samples");
@@ -86,7 +89,7 @@ const App: Component = () => {
                           class={css`
                             width: 100px;
                           `}
-                          src={`http://localhost:3080/img/${sample.id}.png`}
+                          src={`${BASE_URL}/img/${sample.id}.png`}
                           alt={(sample as any).label}
                         ></img>
                       </div>

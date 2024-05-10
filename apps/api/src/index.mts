@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import cors from "cors";
 import { fileURLToPath } from "url";
+import { DATASET_DIR, IMG_DIR, JS_OBJESCTS_DIR } from "./constants.mjs";
 
 // Current file path using `import.meta.url`
 const __filename = fileURLToPath(import.meta.url);
@@ -13,13 +14,20 @@ app.use(cors());
 
 app.use(
   "/json_objects",
-  express.static(path.join(__dirname, "./json_objects"))
+  express.static(JS_OBJESCTS_DIR)
+);
+
+app.use(
+  "/dataset",
+  express.static(DATASET_DIR)
 );
 
 app.use(
   "/img",
-  express.static(path.join(__dirname, "./data/dataset/img"))
+  express.static(IMG_DIR)
 );
+
+console.log('IMG_DIR', IMG_DIR)
 
 const PORT = process.env.PORT || 3080;
 app.listen(PORT, () => {

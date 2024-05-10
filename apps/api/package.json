@@ -1,48 +1,25 @@
 {
-
   "main": "./dist/index.mjs",
-
   "type": "module",
-
   "scripts": {
-
     "start": "node dist/index.mjs",
-
     "dev": "node --trace-warnings --loader ts-node/esm src/index.mts",
-
     "build": "tsc",
-
     "dataset-generator": "node --trace-warnings --loader ts-node/esm src/dataset_generator.mts",
-
+    "feature-extractor": "node --trace-warnings --loader ts-node/esm src/feature_extractor.mts",
     "lint": "eslint ."
-
   },
-
   "dependencies": {
-
     "canvas": "^2.11.2",
-
     "cors": "^2.8.5",
-
     "express": "^4.19.2"
-
   },
-
   "devDependencies": {
-
     "@types/cors": "^2.8.17",
-
     "@types/express": "^4.17.21",
-
     "@types/morgan": "^1.9.9",
-
     "@types/node": "^20.12.11",
-
     "ts-node": "^10.9.2",
-
     "typescript": "^5.4.5"
-
   }
-
 }
-

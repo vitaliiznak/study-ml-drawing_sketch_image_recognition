@@ -1,18 +1,10 @@
 import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import { createCanvas } from "canvas";
 import { drawPaths } from "./draw.mjs";
 import { printProgress } from "./utils.mjs";
 import { CanvasRenderingContext2D } from "canvas";
-import { IMG_DIR, JSON_DIR, RAW_DATA_DIR, SAMPLES } from "./constants.mjs";
-// Current file path using `import.meta.url`
-const __filename = fileURLToPath(import.meta.url);
-// Directory name from the current file path
-const __dirname = path.dirname(__filename);
+import { IMG_DIR, JSON_DIR, RAW_DATA_DIR, SAMPLES, SAMPLES_JS } from "./constants.mjs";
 
-const JS_OBJESCTS_DIR = path.join(__dirname, "../json_objects");
-const SAMPLES_JS = JS_OBJESCTS_DIR + "/samples.json";
 
 const canvas = createCanvas(400, 400);
 const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
