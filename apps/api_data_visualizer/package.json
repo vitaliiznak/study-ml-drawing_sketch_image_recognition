@@ -1,11 +1,13 @@
 {
 
   "main": "./dist/index.mjs",
+
   "type": "module",
 
   "scripts": {
 
     "start": "node dist/index.mjs",
+
     "dev": "node --trace-warnings --loader ts-node/esm src/index.mts",
 
     "build": "tsc",

@@ -5,17 +5,11 @@ import { createCanvas } from "canvas";
 import { drawPaths } from "./draw.mjs";
 import { printProgress } from "./utils.mjs";
 import { CanvasRenderingContext2D } from "canvas";
+import { IMG_DIR, JSON_DIR, RAW_DATA_DIR, SAMPLES } from "./constants.mjs";
 // Current file path using `import.meta.url`
 const __filename = fileURLToPath(import.meta.url);
 // Directory name from the current file path
 const __dirname = path.dirname(__filename);
-
-const DATA_DIR =path.join(__dirname, "../data");
-const RAW_DATA_DIR = DATA_DIR + "/raw";
-const DATASET_DIR = DATA_DIR + "/dataset";
-const JSON_DIR = DATASET_DIR + "/json";
-const IMG_DIR = DATASET_DIR + "/img";
-const SAMPLES = DATASET_DIR + "/samples.json";
 
 const JS_OBJESCTS_DIR = path.join(__dirname, "../json_objects");
 const SAMPLES_JS = JS_OBJESCTS_DIR + "/samples.json";
@@ -28,13 +22,10 @@ async function init() {
   const samples = [];
   let i = 1;
   for (const fileName of fileNames) {
-    if(fileName.startsWith('.')) continue
-    const file = fs.readFileSync(
-      `${RAW_DATA_DIR}/${fileName}`,
-      "utf8"
-    );
+    if (fileName.startsWith(".")) continue;
+    const file = fs.readFileSync(`${RAW_DATA_DIR}/${fileName}`, "utf8");
     const { session, student, drawings } = JSON.parse(file);
-    for (let label in drawings) {
+    for (const label in drawings) {
       samples.push({
         id: i,
         label,
@@ -50,18 +41,12 @@ async function init() {
     }
   }
 
-  fs.writeFileSync(
-    SAMPLES,
-    JSON.stringify(samples, null, 2)
-  );
+  fs.writeFileSync(SAMPLES, JSON.stringify(samples, null, 2));
 
-  fs.writeFileSync(
-    SAMPLES_JS,
-    JSON.stringify(samples, null, 2)
-  );
+  fs.writeFileSync(SAMPLES_JS, JSON.stringify(samples, null, 2));
 }
 
-async function generateImageFile(paths: any, imgPath: string) {
+async function generateImageFile(paths: [number, number][][], imgPath: string) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawPaths(ctx, paths);
   const buffer = canvas.toBuffer("image/png");

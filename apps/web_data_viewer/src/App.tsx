@@ -80,7 +80,6 @@ const App: Component = () => {
                             overflow: hidden;
                           `}
                         >
-                          {/* @ts-ignore */}
                           {(sample as any).label}
                         </div>
                         <img

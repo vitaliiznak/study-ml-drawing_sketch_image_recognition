@@ -3,7 +3,7 @@ type Point = [number, number];
 const drawPath = (
   ctx: CanvasRenderingContext2D,
   path: Point[],
-  color = "black"
+  color = 'black'
 ) => {
   ctx.strokeStyle = color;
   ctx.lineWidth = 3;
@@ -12,15 +12,15 @@ const drawPath = (
   for (let i = 1; i < path.length; i++) {
     ctx.lineTo(...path[i]);
   }
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
   ctx.stroke();
 };
 
 const drawPaths = (
   ctx: CanvasRenderingContext2D,
   paths: Point[][],
-  color = "black"
+  color = 'black'
 ) => {
   for (const path of paths) {
     drawPath(ctx, path, color);
@@ -33,10 +33,10 @@ export default class SketchPad {
   isDrawing: boolean = false;
   paths: Point[][] = [];
 
-  constructor(canvas: HTMLCanvasElement, size: number = 400) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.isDrawing = false;
-    this.ctx = this.canvas.getContext("2d")!;
+    this.ctx = this.canvas.getContext('2d')!;
     this.reset();
     this.#addEventListeners();
   }
@@ -48,7 +48,7 @@ export default class SketchPad {
   }
 
   #addEventListeners(): void {
-    console.log("addEventListeners",  this.canvas)
+    console.log('addEventListeners',  this.canvas);
     this.canvas.onmousedown = (evt: MouseEvent) => {
       const mouse = this.#getMouse(evt);
       this.paths.push([mouse]);
@@ -67,15 +67,15 @@ export default class SketchPad {
     };
     this.canvas.ontouchstart = (evt: TouchEvent) => {
       const loc = evt.touches[0];
-      this.canvas.onmousedown!(new MouseEvent("mousedown", loc));
+      this.canvas.onmousedown!(new MouseEvent('mousedown', loc));
     };
     this.canvas.ontouchmove = (evt: TouchEvent) => {
       const loc = evt.touches[0];
-      this.canvas.onmousemove!(new MouseEvent("mousemove", loc));
+      this.canvas.onmousemove!(new MouseEvent('mousemove', loc));
     };
     document.ontouchend = (evt) => {
       const loc = evt.touches[0];
-      document.onmouseup!(new MouseEvent("mouseup", loc));
+      document.onmouseup!(new MouseEvent('mouseup', loc));
     };
   }
 
