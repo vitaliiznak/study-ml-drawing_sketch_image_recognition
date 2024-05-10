@@ -1,6 +1,6 @@
 
-export const printProgress = function (count, max) {
-  process.stdout.clearLine();
+export const printProgress = function (count: number, max : number) {
+  process.stdout.clearLine(0);
   process.stdout.cursorTo(0);
   const percent = (count / max * 100).toFixed(2);
 

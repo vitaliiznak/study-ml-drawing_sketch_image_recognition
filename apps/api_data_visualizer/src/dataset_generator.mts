@@ -4,36 +4,35 @@ import { fileURLToPath } from "url";
 import { createCanvas } from "canvas";
 import { drawPaths } from "./draw.mjs";
 import { printProgress } from "./utils.mjs";
+import { CanvasRenderingContext2D } from "canvas";
 // Current file path using `import.meta.url`
 const __filename = fileURLToPath(import.meta.url);
 // Directory name from the current file path
 const __dirname = path.dirname(__filename);
 
-const DATA_DIR = "./data";
+const DATA_DIR =path.join(__dirname, "../data");
 const RAW_DATA_DIR = DATA_DIR + "/raw";
 const DATASET_DIR = DATA_DIR + "/dataset";
 const JSON_DIR = DATASET_DIR + "/json";
 const IMG_DIR = DATASET_DIR + "/img";
 const SAMPLES = DATASET_DIR + "/samples.json";
 
-const JS_OBJESCTS_DIR = "./json_objects";
+const JS_OBJESCTS_DIR = path.join(__dirname, "../json_objects");
 const SAMPLES_JS = JS_OBJESCTS_DIR + "/samples.json";
 
 const canvas = createCanvas(400, 400);
-const ctx = canvas.getContext("2d");
+const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
 
 async function init() {
-
-  const fileNames = fs.readdirSync(path.join(__dirname, RAW_DATA_DIR));
+  const fileNames = fs.readdirSync(RAW_DATA_DIR);
   const samples = [];
   let i = 1;
   for (const fileName of fileNames) {
     if(fileName.startsWith('.')) continue
     const file = fs.readFileSync(
-      path.join(__dirname, RAW_DATA_DIR, "/", fileName),
+      `${RAW_DATA_DIR}/${fileName}`,
       "utf8"
     );
-    console.log('file', file)
     const { session, student, drawings } = JSON.parse(file);
     for (let label in drawings) {
       samples.push({
@@ -52,17 +51,17 @@ async function init() {
   }
 
   fs.writeFileSync(
-    path.join(__dirname, SAMPLES),
+    SAMPLES,
     JSON.stringify(samples, null, 2)
   );
 
   fs.writeFileSync(
-    path.join(__dirname, SAMPLES_JS),
+    SAMPLES_JS,
     JSON.stringify(samples, null, 2)
   );
 }
 
-async function generateImageFile(paths, imgPath) {
+async function generateImageFile(paths: any, imgPath: string) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawPaths(ctx, paths);
   const buffer = canvas.toBuffer("image/png");
