@@ -1,17 +1,110 @@
 import type { Component } from 'solid-js';
 import { css } from '@emotion/css';
+import mathUtils from './mathUtils';
+import Chart from './chart';
 
 const App: Component = () => {
+  const N = 1000
+  const samples = Array.from({ length: N }, (_, i) => {
+    const type = Math.random() > 0.5 ? 'basic' : 'sport'
+    const km = mathUtils.lerp(3000, 300_000, Math.random())
+    const price = mathUtils.remap(3000, 300_000, 900, 9_000, km)
+      + mathUtils.lerp(-2000, 2000, Math.random())
+      + (type === 'sport' ? 5000 : 0)
+
+    return ({
+      id: i + 1,
+      label: type,
+      point: [km, price]
+    })
+  })
+
+  const options = {
+    /*    size: 250, */
+    axesLabels: ['Kilomiters', 'Price'],
+    styles: {
+      basic: {
+        color: 'blue',
+        size: 5
+      },
+      sport: {
+        color: 'red',
+        size: 5
+      }
+    }
+  }
+
+
+
+
   return (
     <div>
       <header>
         <h1>Custom Chart Demo</h1>
         <div class={css`display: flex;`}>
-          <div id="chartContainer"></div>
-          <table id="chartDataTable"></table>
+
+          <table class={
+            css`
+              border: 2px solid white;
+              padding: 4px;
+              text-align: center;
+              border-collapse: collapse;
+              margin-left: 20px;
+              & th {
+                padding: 8px;
+                font-weight: bold;
+              }
+              & tr {
+                padding: 4px;
+                border: 1px solid white;
+              }
+              & td {
+                padding: 4px;
+                border: 1px solid white;
+              }
+            `
+          }>
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Label</th>
+                <th>Km</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {samples.map(({ id, label, point }) => (
+                <tr>
+                  <td>{id}</td>
+                  <td>{label}</td>
+                  <td>{point[0].toFixed(0)}</td>
+                  <td>{point[1].toFixed(0)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div class={
+            css`
+              position: fixed;
+              right:0;
+              top: 40%;
+              transform: translateY(-50%);
+            `
+          }>
+            <canvas width="450" height="450" id="chartCanvas"
+              class={
+                css`
+                background-color: whitesmoke;
+                `
+              }
+              ref={(refCanvas) => {
+                const chart = new Chart(refCanvas, samples, options);
+              }}
+            ></canvas>
+          </div>
         </div>
-      </header>
-    </div>
+      </header >
+    </div >
   );
 };
 

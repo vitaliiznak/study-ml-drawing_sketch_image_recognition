@@ -23,6 +23,9 @@ export default [
         { argsIgnorePattern: "^_" },
       ],
       "@typescript-eslint/no-explicit-any": ["warn"],
+      indent: ["error", 2], // Enforce 2 spaces
+      quotes: ["error", "single"], // Use single quotes
+      semi: ["error", "never"], // Enforce semicolons
     },
   },
   {
@@ -34,7 +37,7 @@ export default [
     rules: {
       indent: ["error", 2], // Enforce 2 spaces
       quotes: ["error", "single"], // Use single quotes
-      semi: ["error", "always"], // Enforce semicolons
+      semi: ["error", "never"], // Enforce semicolons
     },
   },
   {
