@@ -4,7 +4,7 @@ import mathUtils from "./mathUtils";
 
 type OptionsT = {
   size?: number;
-  axesLabels?: string[];
+  axesLabels: string[];
   styles?: {
     [key: string]: {
       color: string;
@@ -79,13 +79,57 @@ export default class Chart {
   #draw() {
     const { ctx, canvas } = this
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+
+    ctx.save()
     ctx.globalAlpha = this.transparency
+    // Move the origin to the bottom-left corner
+    ctx.translate(0, canvas.height);
+    // Scale the y-axis to point upwards
+    ctx.scale(1, -1);
     this.#drawSamples()
-    ctx.globalAlpha = 1
+
+    ctx.restore()
+
+    this.#drawAxes()
+  }
+
+  #drawAxes() {
+    const { ctx, canvas, options, margin } = this
+    const { xMin, xMax, yMin, yMax } = this.pixelBounds
+
+
+    graphics.drawText(ctx, {
+      text: options.axesLabels[0],
+      loc: [canvas.width / 2, yMax + margin / 2],
+      size: margin * 0.6
+    })
+
+
+    ctx.save()
+    ctx.translate(xMin - margin / 2, canvas.height / 2)
+    ctx.rotate(-Math.PI / 2)
+    graphics.drawText(ctx, {
+      text: options.axesLabels[1],
+      loc: [0, 0],
+      size: margin * 0.6
+    })
+    ctx.restore()
+
+    ctx.beginPath()
+    ctx.moveTo(xMin, yMin)
+    ctx.lineTo(xMin, yMax)
+    ctx.lineTo(xMax, yMax)
+    ctx.setLineDash([5, 4])
+    ctx.lineWidth = 2
+    ctx.strokeStyle = 'blue'
+    ctx.stroke()
+    ctx.setLineDash([])
+
   }
 
   #drawSamples() {
-    const { ctx, samples, pixelBounds, dataBounds, options } = this
+    const { ctx, samples, dataBounds, pixelBounds, options } = this
     samples.forEach((sample) => {
       const pixelLoc = mathUtils.remapPoint(dataBounds, pixelBounds, sample.point)
       graphics.drawPoint(ctx, pixelLoc, 2)

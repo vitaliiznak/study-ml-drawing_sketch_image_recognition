@@ -1,14 +1,16 @@
-import type { Component } from 'solid-js';
+import { createEffect, createSignal, onCleanup, onMount, type Component } from 'solid-js';
 import { css } from '@emotion/css';
 import mathUtils from './mathUtils';
 import Chart from './chart';
 
 const App: Component = () => {
+  const [canvasFontLoaded, setCanvasFontLoaded] = createSignal(false);
+  let refCanvas: HTMLCanvasElement | null = null;
   const N = 1000
   const samples = Array.from({ length: N }, (_, i) => {
     const type = Math.random() > 0.5 ? 'basic' : 'sport'
     const km = mathUtils.lerp(3000, 300_000, Math.random())
-    const price = mathUtils.remap(3000, 300_000, 900, 9_000, km)
+    const price = mathUtils.remap(3000, 300_000, 9_000, 900, km)
       + mathUtils.lerp(-2000, 2000, Math.random())
       + (type === 'sport' ? 5000 : 0)
 
@@ -33,6 +35,31 @@ const App: Component = () => {
       }
     }
   }
+
+  onMount(() => {
+    const fontName = 'Courier New';
+    const fontSize = '14px';
+
+    // Check if the font is already loaded
+    if (document.fonts.check(`${fontSize} ${fontName}`)) {
+      setCanvasFontLoaded(true);
+    } else {
+      // Attach a listener to be notified when fonts are loaded
+      document.fonts.ready.then(() => {
+        setCanvasFontLoaded(true);
+      });
+    }
+
+    onCleanup(() => {
+      // Clean up any resources or listeners if needed
+    });
+  });
+
+  createEffect(() => {
+    if (canvasFontLoaded() && refCanvas) {
+      const chart = new Chart(refCanvas, samples, options);
+    }
+  })
 
 
 
@@ -89,17 +116,15 @@ const App: Component = () => {
               right:0;
               top: 40%;
               transform: translateY(-50%);
+              padding-right: 10px;
             `
           }>
             <canvas width="450" height="450" id="chartCanvas"
               class={
                 css`
-                background-color: whitesmoke;
-                `
-              }
-              ref={(refCanvas) => {
-                const chart = new Chart(refCanvas, samples, options);
-              }}
+                  background-color: whitesmoke;
+                `}
+              ref={(ref) => { refCanvas = ref }}
             ></canvas>
           </div>
         </div>
