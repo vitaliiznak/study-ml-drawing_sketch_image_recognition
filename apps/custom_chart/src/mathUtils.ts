@@ -36,4 +36,25 @@ const remapPoint = (oldBounds: BoundsT, newBounds:
 }
 
 
-export default { lerp, invLerp, remap, remapPoint }
+const add = (a: [number, number], b: [number, number]): [number, number] => {
+  return [a[0] + b[0], a[1] + b[1]]
+}
+
+const subtract = (a: [number, number], b: [number, number]): [number, number] => {
+  return [a[0] - b[0], a[1] - b[1]]
+}
+
+const getCenter = (bounds: BoundsT): [number, number] => {
+  return [
+    (bounds.xMin + bounds.xMax) / 2,
+    (bounds.yMin + bounds.yMax) / 2
+  ]
+}
+
+
+export default {
+  lerp, invLerp,
+  remap, remapPoint,
+  add, subtract,
+  getCenter
+}

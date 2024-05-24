@@ -61,9 +61,6 @@ const App: Component = () => {
     }
   })
 
-
-
-
   return (
     <div>
       <header>
@@ -119,7 +116,7 @@ const App: Component = () => {
               padding-right: 10px;
             `
           }>
-            <canvas width="450" height="450" id="chartCanvas"
+            <canvas width="780" height="780" id="chartCanvas"
               class={
                 css`
                   background-color: whitesmoke;

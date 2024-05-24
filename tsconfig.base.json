@@ -6,6 +6,10 @@
         "packages/shared/src"
       ]
     },
+    "lib": [
+      "dom",
+      "esnext"
+    ],
     "strict": true,
     "esModuleInterop": true
   }

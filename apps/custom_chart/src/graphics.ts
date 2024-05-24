@@ -1,9 +1,21 @@
 
 
 
-const drawPoint = (ctx: CanvasRenderingContext2D, loc: [number, number], radius: number = 4) => {
+const drawPoint = (
+  ctx: CanvasRenderingContext2D,
+  loc: [number, number],
+  {
+    radius = 4,
+    color = 'black',
+    icon = undefined
+  }:
+    {
+      radius?: number,
+      color?: string,
+      icon?: string
+    }) => {
   ctx.beginPath()
-  ctx.fillStyle = 'black'
+  ctx.fillStyle = color
   ctx.arc(...loc, radius, 0, Math.PI * 2)
   ctx.fill()
 }
@@ -15,7 +27,7 @@ const drawText = (ctx: CanvasRenderingContext2D, {
   align = 'center',
   vAlign = 'middle',
   size = 18,
-  color = 'red'
+  color = 'black'
 }: {
   text: string,
   loc: [number, number],
@@ -28,9 +40,9 @@ const drawText = (ctx: CanvasRenderingContext2D, {
   ctx.textBaseline = vAlign
   ctx.font = `${size}px Courier New`
   ctx.fillStyle = color
-  ctx.strokeStyle = 'red';
+  ctx.strokeStyle = color
 
-  ctx.fillStyle = "red";
+  ctx.fillStyle = color
 
 
   ctx.fillText(text, ...loc)
