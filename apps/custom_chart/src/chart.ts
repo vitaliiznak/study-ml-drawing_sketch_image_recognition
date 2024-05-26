@@ -4,15 +4,18 @@ import mathUtils from './mathUtils'
 
 type OptionsT = {
   axesLabels: string[];
+  icon: string
   styles: {
     [key: string]: {
+      text: string
       color: string
       size: number
+      image?: HTMLImageElement
     }
   }
 }
 
-type SampleT = {
+export type SampleT = {
   id: number
   label: string
   point: [number, number]
@@ -48,7 +51,9 @@ export default class Chart {
   }
 
   constructor(canvas: HTMLCanvasElement, samples: SampleT[], {
+    // @typescript-eslint/no-unused-vars off
     axesLabels = ['X', 'Y'],
+    // @typescript-eslint/no-unused-vars off
     styles = {}
   }) {
     this.canvas = canvas
@@ -109,7 +114,7 @@ export default class Chart {
       this.#draw()
     }
 
-    canvas.onmouseup = (e) => {
+    canvas.onmouseup = (_e) => {
       // const dataLoc = this.#getMousePos(e, 'data')
       // dragInfo.start = dataLoc
       dataTrans.offset = mathUtils.add(dataTrans.offset, dragInfo.offset)
@@ -119,8 +124,6 @@ export default class Chart {
 
   #updateDataBounds(offset = [0, 0], scale = 1) {
     const { dataBounds, defaultDataBounds } = this
-    const oldDataBounds = structuredClone(dataBounds)
-
     dataBounds.xMin = defaultDataBounds.xMin + offset[0]
     dataBounds.xMax = defaultDataBounds.xMax + offset[0]
     dataBounds.yMin = defaultDataBounds.yMin + offset[1]
@@ -164,7 +167,6 @@ export default class Chart {
     const { ctx, canvas } = this
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.globalAlpha = this.transparency
-    // Move the origin to the bottom-left corner
     this.#drawSamples()
     this.#drawAxes()
   }
@@ -250,10 +252,25 @@ export default class Chart {
     samples.forEach((sample) => {
       const pixelLoc = mathUtils.remapPoint(dataBounds, pixelBounds, sample.point)
       const style = options.styles[sample.label]
-      graphics.drawPoint(ctx, pixelLoc, {
-        radius: 4,
-        color: style.color
-      })
+      switch (options.icon) {
+      case 'text':
+        graphics.drawText(ctx, {
+          text: style.text,
+          loc: pixelLoc,
+          color: style.color,
+          size: style.size
+        })
+        break
+      case 'image':
+
+        ctx.drawImage(style.image!, pixelLoc[0], pixelLoc[1])
+        break
+      default:
+        graphics.drawPoint(ctx, pixelLoc, {
+          radius: 4,
+          color: style.color
+        })
+      }
     })
   }
 

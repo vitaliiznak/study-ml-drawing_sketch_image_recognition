@@ -1,83 +1,83 @@
-import { createSignal, onMount, type Component } from "solid-js";
+import { createSignal, onMount, type Component } from 'solid-js'
 
-import SketchPad from "./sketchpad";
-import { css } from "@emotion/css";
+import SketchPad from './sketchpad'
+import { css } from '@emotion/css'
 
 const labels = [
-  "car",
-  "fish",
-  "house",
-  "tree",
-  "bicycle",
-  "guitar",
-  "pencil",
-  "clock",
-];
+  'car',
+  'fish',
+  'house',
+  'tree',
+  'bicycle',
+  'guitar',
+  'pencil',
+  'clock',
+]
 
 const NameView = ({ onDone }: { onDone: (name: string) => any }) => {
-  let inputRef: HTMLInputElement;
+  let inputRef: HTMLInputElement
   const onNameInputSave = () => {
-    const name = inputRef.value;
+    const name = inputRef.value
     if (!name) {
-      alert("Please input your name!");
+      alert('Please input your name!')
     }
-    onDone(name);
-  };
+    onDone(name)
+  }
 
   return (
     <div>
       <h4>Please Input your name first!</h4>
       <input
         ref={(el) => {
-          inputRef = el;
+          inputRef = el
         }}
         type="text"
       />
       <button onClick={onNameInputSave}>Save</button>
     </div>
-  );
-};
+  )
+}
 
 const App: Component = () => {
-  let canvasRef: HTMLCanvasElement;
-  let sketchpad: SketchPad;
-  const [labelIndex, setLabelIndex] = createSignal(0);
-  const [name, setName] = createSignal();
+  let canvasRef: HTMLCanvasElement
+  let sketchpad: SketchPad
+  const [labelIndex, setLabelIndex] = createSignal(0)
+  const [name, setName] = createSignal()
 
   const data = {
-    student: "",
+    student: '',
     session: crypto.randomUUID(),
     drawings: {} as { [key: string]: [number, number][][] },
-  };
+  }
 
   onMount(() => {
-    sketchpad = new SketchPad(canvasRef);
-  });
+    sketchpad = new SketchPad(canvasRef)
+  })
 
   const onNameDone = (name: string) => {
-    setName(name);
-    data.student = name;
-  };
+    setName(name)
+    data.student = name
+  }
 
   const onNext = () => {
     if (sketchpad.paths.length === 0) {
-      alert("Please draw something first!");
-      return;
+      alert('Please draw something first!')
+      return
     }
-    setLabelIndex(labelIndex() + 1);
-    data.drawings[labels[labelIndex()]] = sketchpad.paths;
-    sketchpad.reset();
-  };
+    setLabelIndex(labelIndex() + 1)
+    data.drawings[labels[labelIndex()]] = sketchpad.paths
+    sketchpad.reset()
+  }
 
   const onSave = () => {
-    const element = document.createElement("a");
+    const element = document.createElement('a')
     const stringifiedData = JSON.stringify(data, null, 2)
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(stringifiedData));
-    element.setAttribute('download', `${name()}_${data.session}.json`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(stringifiedData))
+    element.setAttribute('download', `${name()}_${data.session}.json`)
+    element.style.display = 'none'
+    document.body.appendChild(element)
+    element.click()
+    document.body.removeChild(element)
   }
 
   return (
@@ -94,7 +94,7 @@ const App: Component = () => {
       {!name() && <NameView onDone={onNameDone} />}
       <div
         class={css`
-          display: ${name() ? "block" : "none"};
+          display: ${name() ? 'block' : 'none'};
         `}
       >
         <div>
@@ -128,7 +128,7 @@ const App: Component = () => {
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default App;
+export default App

@@ -1,35 +1,35 @@
-import { createEffect, createMemo, createResource, onCleanup, type Component } from "solid-js";
-import { css } from "@emotion/css";
+import { createEffect, createMemo, createResource, onCleanup, type Component } from 'solid-js'
+import { css } from '@emotion/css'
 
 
-const BASE_URL = `http://localhost:3080`
+const BASE_URL = 'http://localhost:3080'
 
 const fetchFeatures = async () => {
   const response = await fetch(
     `${BASE_URL}/dataset/features.json`
-  );
+  )
   if (!response.ok) {
-    throw new Error("Failed to fetch samples");
+    throw new Error('Failed to fetch samples')
   }
-  const features = await response.json();
-  return features;
-};
+  const features = await response.json()
+  return features
+}
 
-const flaggedUsers = [] as string[];
+const flaggedUsers = [] as string[]
 
 
 
 const App: Component = () => {
   const [features, { refetch: refetchFeatres }] = createResource(
     fetchFeatures
-  );
+  )
 
   let chartContainer: HTMLDivElement | undefined
 
 
   const featuresTransformed = createMemo(() => {
     if (features.loading) {
-      return null; // or some loading state/data
+      return null // or some loading state/data
     }
 
     // Example transformation: combining user data with product data
@@ -44,7 +44,7 @@ const App: Component = () => {
 
   createEffect(() => {
     if (features.loading || chartContainer === undefined) {
-      return null; // or some loading state/data
+      return null // or some loading state/data
     }
     console.log({
       features: features()
@@ -56,7 +56,7 @@ const App: Component = () => {
       vAxis: { title: features().featuresNames[1] }
     }
 
-    google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.load('current', { 'packages': ['corechart'] })
 
     google.charts.setOnLoadCallback(() => {
       const data = new google.visualization.DataTable()
@@ -65,15 +65,15 @@ const App: Component = () => {
       data.addRows(features().samples.map((s: any) => s.point))
 
       const chart = new google.visualization.ScatterChart(chartContainer!)
-      chart.draw(data, options);
-    });
+      chart.draw(data, options)
+    })
 
-  });
+  })
 
 
   onCleanup(() => {
-    google.visualization.events.removeAllListeners(window);
-  });
+    google.visualization.events.removeAllListeners(window)
+  })
 
 
   return (
@@ -92,16 +92,16 @@ const App: Component = () => {
           {featuresTransformed()?.samplesGroupedByStudentId &&
             Object.keys(featuresTransformed()?.samplesGroupedByStudentId as any).map((studentId) => {
               const studentSamples =
-                (featuresTransformed()?.samplesGroupedByStudentId as any)[studentId]!;
-              const studentName = (studentSamples[0] as any).studentName;
+                (featuresTransformed()?.samplesGroupedByStudentId as any)[studentId]!
+              const studentName = (studentSamples[0] as any).studentName
               return (
                 <div
                   class={css`
                   display: flex;
                   align-items: center;
                   ${flaggedUsers.includes(studentName)
-                      ? "filter: blur(5px);"
-                      : ""}
+                  ? 'filter: blur(5px);'
+                  : ''}
                 `}
                 >
                   <label
@@ -147,10 +147,10 @@ const App: Component = () => {
                           ></img>
                         </div>
                       </div>
-                    );
+                    )
                   })}
                 </div>
-              );
+              )
             })}
         </div>
         <div class={css`min-width: 800px; height: 800px;`} >
@@ -160,7 +160,7 @@ const App: Component = () => {
       </div>
 
     </div>
-  );
-};
+  )
+}
 
-export default App;
+export default App

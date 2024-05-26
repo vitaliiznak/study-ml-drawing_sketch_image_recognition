@@ -1,13 +1,10 @@
 
-
-
 const drawPoint = (
   ctx: CanvasRenderingContext2D,
   loc: [number, number],
   {
     radius = 4,
-    color = 'black',
-    icon = undefined
+    color = 'black'
   }:
     {
       radius?: number,
@@ -16,7 +13,7 @@ const drawPoint = (
     }) => {
   ctx.beginPath()
   ctx.fillStyle = color
-  ctx.arc(...loc, radius, 0, Math.PI * 2)
+  ctx.arc(loc[0], loc[1], radius, 0, Math.PI * 2)
   ctx.fill()
 }
 
@@ -46,14 +43,81 @@ const drawText = (ctx: CanvasRenderingContext2D, {
 
 
   ctx.fillText(text, ...loc)
-
-
 }
 
+
+const colorHueMap = {
+  red: 0,
+  orange: 30,
+  yellow: 60,
+  lime: 90,
+  green: 120,
+  cyan: 180,
+  blue: 240,
+  purple: 280,
+  magenta: 300,
+  pink: 320,
+}
+
+const generateImagesAndAddToStyles = (styles: {
+  [key: string]: {
+    text: string,
+    color: string,
+    size: number,
+    image?: HTMLImageElement
+  }
+}, size = 20) => {
+  for (let key in styles) {
+    const style = styles[key]
+    const canvas = document.createElement('canvas')
+    canvas.width = size + 8
+    canvas.height = size
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      throw new Error('Could not get 2d context')
+    }
+    console.log('style', style)
+
+    ctx.beginPath()
+    // eslint-disable-next-line
+    if (colorHueMap[style.color] !== undefined) {
+      // eslint-disable-next-line
+      const hue = -45 + colorHueMap[style.color]
+      ctx.filter = `
+      brightness(2)
+      contrast(0.3)
+      sepia(1)
+      brightness(0.7)
+      hue-rotate(${hue}deg)
+      saturate(3)
+      contrast(3)
+      `
+    } else {
+      ctx.filter = 'grayscale(100%)'
+    }
+
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.font = `${size}px Courier New`
+    ctx.fillText(style.text, size / 2, size / 2)
+    ctx.fill()
+
+    style.image = new Image()
+    style.image.src = canvas.toDataURL()
+  }
+}
+
+const drawImage = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, loc: [number, number]) => {
+  ctx.beginPath()
+  ctx.drawImage(image, loc[0] - image.width / 2, loc[1] - image.height / 2)
+  ctx.fill()
+}
 
 
 
 export default {
   drawPoint,
-  drawText
+  drawText,
+  generateImagesAndAddToStyles,
+  drawImage
 }

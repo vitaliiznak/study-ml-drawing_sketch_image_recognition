@@ -1,35 +1,34 @@
-import express from "express";
-import path from "path";
-import cors from "cors";
-import { fileURLToPath } from "url";
-import { DATASET_DIR, IMG_DIR, JS_OBJESCTS_DIR } from "./constants.mjs";
+import express from 'express'
+
+import cors from 'cors'
+import { fileURLToPath } from 'url'
+import { DATASET_DIR, IMG_DIR, JS_OBJESCTS_DIR } from './constants.mjs'
 
 // Current file path using `import.meta.url`
-const __filename = fileURLToPath(import.meta.url);
+const __filename = fileURLToPath(import.meta.url)
 // Directory name from the current file path
-const __dirname = path.dirname(__filename);
 
-const app = express();
-app.use(cors());
+const app = express()
+app.use(cors())
 
 app.use(
-  "/json_objects",
+  '/json_objects',
   express.static(JS_OBJESCTS_DIR)
-);
+)
 
 app.use(
-  "/dataset",
+  '/dataset',
   express.static(DATASET_DIR)
-);
+)
 
 app.use(
-  "/img",
+  '/img',
   express.static(IMG_DIR)
-);
+)
 
 console.log('IMG_DIR', IMG_DIR)
 
-const PORT = process.env.PORT || 3080;
+const PORT = process.env.PORT || 3080
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  console.log(`Server is running on port ${PORT}`)
+})
