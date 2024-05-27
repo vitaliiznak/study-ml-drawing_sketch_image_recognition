@@ -1,6 +1,7 @@
 import { createEffect, createMemo, createResource, onCleanup, type Component } from 'solid-js'
 import { css } from '@emotion/css'
 
+import Chart, { mathUtils } from '@signumcode/chart'
 
 const BASE_URL = 'http://localhost:3080'
 
@@ -46,9 +47,6 @@ const App: Component = () => {
     if (features.loading || chartContainer === undefined) {
       return null // or some loading state/data
     }
-    console.log({
-      features: features()
-    })
     const options = {
       width: 400,
       heigh: 400,
@@ -100,8 +98,8 @@ const App: Component = () => {
                   display: flex;
                   align-items: center;
                   ${flaggedUsers.includes(studentName)
-                  ? 'filter: blur(5px);'
-                  : ''}
+                      ? 'filter: blur(5px);'
+                      : ''}
                 `}
                 >
                   <label

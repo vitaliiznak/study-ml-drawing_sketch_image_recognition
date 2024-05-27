@@ -1,11 +1,17 @@
 {
-  "name": "custom-chart",
+  "name": "@signumcode/chart",
   "version": "0.0.0",
   "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "file": [
+    "dist"
+  ],
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && tsc --declaration",
     "serve": "vite preview"
   },
   "license": "MIT",

@@ -45,8 +45,11 @@ const drawText = (ctx: CanvasRenderingContext2D, {
   ctx.fillText(text, ...loc)
 }
 
+export type ColorT = 'red' | 'orange' | 'yellow' | 'lime' | 'green' | 'cyan' | 'blue' | 'purple' | 'magenta' | 'pink'
 
-const colorHueMap = {
+const colorHueMap: {
+  [key in ColorT]: number
+} = {
   red: 0,
   orange: 30,
   yellow: 60,
@@ -62,7 +65,7 @@ const colorHueMap = {
 const generateImagesAndAddToStyles = (styles: {
   [key: string]: {
     text: string,
-    color: string,
+    color?: ColorT,
     size: number,
     image?: HTMLImageElement
   }
@@ -83,10 +86,9 @@ const generateImagesAndAddToStyles = (styles: {
     ctx.textBaseline = 'middle'
     canvas.height = style.size
     ctx.font = `${style.size}px Courier New`
-    if (colorHueMap[style.color] !== undefined) {
+    if (colorHueMap[style.color as ColorT] !== undefined) {
       // eslint-disable-next-line
-      console.log('colorHueMap[style.color]', colorHueMap[style.color])
-      const hue = -45 + colorHueMap[style.color]
+      const hue = -45 + colorHueMap[style.color as ColorT]
       ctx.filter = `
       brightness(2)
       contrast(0.3)

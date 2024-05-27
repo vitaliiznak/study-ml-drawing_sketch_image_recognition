@@ -48,7 +48,6 @@ export default class SketchPad {
   }
 
   #addEventListeners(): void {
-    console.log('addEventListeners',  this.canvas)
     this.canvas.onmousedown = (evt: MouseEvent) => {
       const mouse = this.#getMouse(evt)
       this.paths.push([mouse])

@@ -1,7 +1,7 @@
 import { createEffect, createSignal, on, onCleanup, onMount, type Component } from 'solid-js'
 import { css, cx } from '@emotion/css'
 import mathUtils from './mathUtils'
-import Chart, { SampleT } from './chart'
+import Chart, { OptionsT, SampleT } from './chart'
 import graphics from './graphics'
 
 
@@ -55,18 +55,16 @@ const App: Component = () => {
         text: '🏎️',
         color: 'red',
         size: 34,
-
       }
     },
-    onClick: (_e: MouseEvent, sample: SampleT) => {
-      console.log('sample', sample)
+    onClick: (_e, sample) => {
       if (sample) {
         setEmphasizedRowId(sample.id)
       } else {
         setEmphasizedRowId(null)
       }
     }
-  }
+  } as OptionsT
 
   createEffect(() => {
 

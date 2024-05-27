@@ -1,19 +1,19 @@
-import { c } from 'vite/dist/node/types.d-aGj9QkWt';
-import graphics from './graphics'
+import graphics, { ColorT } from './graphics'
 import mathUtils from './mathUtils'
 
 
-type OptionsT = {
+export type OptionsT = {
   axesLabels: string[];
   icon: string
   styles: {
     [key: string]: {
       text: string
-      color: string
+      color?: ColorT
       size: number
       image?: HTMLImageElement
     }
   }
+  onClick?: (e: MouseEvent, point: SampleT | undefined) => void
 }
 
 export type SampleT = {
@@ -54,15 +54,15 @@ export default class Chart {
 
   hoveredSample: SampleT | undefined
   selectedSample: SampleT | undefined
-  #onClick: ((e: MouseEvent, point: SampleT | undefined) => any) | undefined
+  #onClick?: (e: MouseEvent, point: SampleT | undefined) => any
 
   constructor(canvas: HTMLCanvasElement, samples: SampleT[], {
     // @typescript-eslint/no-unused-vars off
     axesLabels = ['X', 'Y'],
     // @typescript-eslint/no-unused-vars off
     styles = {},
-    onClick = undefined
-  }) {
+    onClick
+  }: OptionsT) {
     this.canvas = canvas
     this.samples = samples
     this.options = arguments[2]

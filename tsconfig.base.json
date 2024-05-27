@@ -2,8 +2,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@monorepo/shared": [
-        "packages/shared/src"
+      "@monorepo/packages": [
+        "packages/*"
       ]
     },
     "lib": [

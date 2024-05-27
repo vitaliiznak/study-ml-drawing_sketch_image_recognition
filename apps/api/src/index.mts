@@ -26,7 +26,6 @@ app.use(
   express.static(IMG_DIR)
 )
 
-console.log('IMG_DIR', IMG_DIR)
 
 const PORT = process.env.PORT || 3080
 app.listen(PORT, () => {

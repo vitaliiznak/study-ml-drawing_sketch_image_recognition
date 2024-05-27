@@ -1,6 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true, // Set to true to generate declaration files
     "lib": [
       "dom",
       "esnext"
@@ -16,7 +19,13 @@
     "types": [
       "vite/client"
     ],
-    "noEmit": true,
-    "isolatedModules": true,
+    "noEmit": false,
+    "isolatedModules": true
   },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
