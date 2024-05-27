@@ -51,10 +51,28 @@ const getCenter = (bounds: BoundsT): [number, number] => {
   ]
 }
 
+const getNearestPointIndex = (point: [number, number], points: [number, number][]) => {
+  let minDist = Infinity
+  let minIndex = 0
+  points.forEach((p, i) => {
+    const dist = Math.hypot(p[0] - point[0], p[1] - point[1])
+    if (dist < minDist) {
+      minDist = dist
+      minIndex = i
+    }
+  })
+  return minIndex
+}
+
+const equalPoints = (a: [number, number], b: [number, number]) => {
+  return a[0] === b[0] && a[1] === b[1]
+}
 
 export default {
   lerp, invLerp,
   remap, remapPoint,
   add, subtract,
-  getCenter
+  getCenter,
+  getNearestPointIndex,
+  equalPoints
 }

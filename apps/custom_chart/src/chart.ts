@@ -1,3 +1,4 @@
+import { c } from 'vite/dist/node/types.d-aGj9QkWt';
 import graphics from './graphics'
 import mathUtils from './mathUtils'
 
@@ -31,6 +32,7 @@ type BoundsT = {
 export default class Chart {
   canvas: HTMLCanvasElement
   samples: SampleT[]
+
   options: OptionsT
   ctx: CanvasRenderingContext2D
   transparency: number
@@ -50,17 +52,22 @@ export default class Chart {
     isDragging: boolean
   }
 
+  hoveredSample: SampleT | undefined
+  selectedSample: SampleT | undefined
+  #onClick: ((e: MouseEvent, point: SampleT | undefined) => any) | undefined
+
   constructor(canvas: HTMLCanvasElement, samples: SampleT[], {
     // @typescript-eslint/no-unused-vars off
     axesLabels = ['X', 'Y'],
     // @typescript-eslint/no-unused-vars off
-    styles = {}
+    styles = {},
+    onClick = undefined
   }) {
     this.canvas = canvas
     this.samples = samples
     this.options = arguments[2]
     this.ctx = this.canvas.getContext('2d')!
-    this.transparency = 0.8
+    this.transparency = 0.45
     this.margin = this.canvas.width * 0.05
     this.pixelBounds = this.#getPixelBounds()
     this.dataBounds = this.#getDataBounds()
@@ -76,10 +83,17 @@ export default class Chart {
       offset: [0, 0],
       isDragging: false
     }
+    this.#onClick = onClick
+
     this.#draw()
     /*  this.init() */
     this.#addEventListeners()
 
+  }
+
+  setActiveSampleById(sampleId: number) {
+    this.selectedSample = this.samples.find(s => s.id === sampleId)
+    this.#draw()
   }
 
   #addEventListeners() {
@@ -88,16 +102,33 @@ export default class Chart {
       const dataLoc = this.#getMousePos(e, 'data')
       dragInfo.start = dataLoc
       dragInfo.isDragging = true
+
+      dragInfo.offset = [0, 0]
+
+      dragInfo.end = [0, 0]
     }
 
     canvas.onmousemove = (e) => {
-      if (!dragInfo.isDragging) return
-      const dataLoc = this.#getMousePos(e, 'data')
-      dragInfo.end = dataLoc
-      dragInfo.offset = mathUtils.subtract(dragInfo.start, dragInfo.end)
-      const newOffset = mathUtils.add(dataTrans.offset, dragInfo.offset)
-      this.#updateDataBounds(newOffset)
+      const pixelLoc = this.#getMousePos(e)
 
+      if (dragInfo.isDragging) {
+        const dataLoc = mathUtils.remapPoint(this.pixelBounds, this.dataBounds, pixelLoc)
+        dragInfo.end = dataLoc
+        dragInfo.offset = mathUtils.subtract(dragInfo.start, dragInfo.end)
+        const newOffset = mathUtils.add(dataTrans.offset, dragInfo.offset)
+        this.#updateDataBounds(newOffset)
+      }
+      const samplesPointsPixelBoulds = this.samples.map(s => mathUtils.remapPoint(this.dataBounds, this.pixelBounds, s.point))
+      const nearestIndex = mathUtils.getNearestPointIndex([pixelLoc[0] - 38, pixelLoc[1] - 8], samplesPointsPixelBoulds)
+      this.hoveredSample = this.samples[nearestIndex]
+      const nearestPointPixelBounds = samplesPointsPixelBoulds[nearestIndex]
+      const distanceBetweenMouseAndNearest = Math.hypot(
+        pixelLoc[0] - nearestPointPixelBounds[0],
+        pixelLoc[1] - nearestPointPixelBounds[1]
+      )
+      if (distanceBetweenMouseAndNearest > 44) {
+        this.hoveredSample = undefined
+      }
       this.#draw()
     }
 
@@ -119,6 +150,28 @@ export default class Chart {
       // dragInfo.start = dataLoc
       dataTrans.offset = mathUtils.add(dataTrans.offset, dragInfo.offset)
       dragInfo.isDragging = false
+      dragInfo.start = [0, 0]
+
+    }
+
+    canvas.onclick = (e) => {
+      if (!mathUtils.equalPoints(dragInfo.offset, [0, 0])) return
+
+      if (this.hoveredSample) {
+        if (this.selectedSample && this.selectedSample.id === this.hoveredSample.id) {
+          this.selectedSample = undefined
+        } else {
+          this.selectedSample = this.hoveredSample
+        }
+      } else {
+        this.selectedSample = undefined
+      }
+
+      if (this.#onClick) {
+        this.#onClick(e, this.selectedSample)
+      }
+
+      this.#draw()
     }
   }
 
@@ -138,7 +191,9 @@ export default class Chart {
   #getMousePos(e: MouseEvent, type: 'pixel' | 'data' = 'pixel') {
     const { canvas, defaultDataBounds } = this
     const rect = canvas.getBoundingClientRect()
-    const pixelLoc: [number, number] = [e.clientX - rect.left, e.clientY - rect.top]
+    const pixelLoc: [number, number] = [
+      e.clientX - rect.left,
+      e.clientY - rect.top]
     return type === 'data' ? mathUtils.remapPoint(this.pixelBounds, defaultDataBounds, pixelLoc) : pixelLoc
   }
 
@@ -167,8 +222,33 @@ export default class Chart {
     const { ctx, canvas } = this
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.globalAlpha = this.transparency
-    this.#drawSamples()
+    this.#drawSamples(this.samples)
+
+    if (this.hoveredSample) {
+      this.#emphasizeSample(this.hoveredSample)
+    }
+    if (this.selectedSample) {
+      this.#emphasizeSample(this.selectedSample, 'yellow')
+    }
     this.#drawAxes()
+  }
+
+  #emphasizeSample(sample: SampleT, color = 'white') {
+
+
+    const pixelLoc = mathUtils.remapPoint(this.defaultDataBounds, this.pixelBounds, sample.point)
+    pixelLoc[0] = pixelLoc[0] + 34
+    pixelLoc[1] = pixelLoc[1] + 8
+    const grd = this.ctx.createRadialGradient(pixelLoc[0], pixelLoc[1], 0, pixelLoc[0], pixelLoc[1], 128)
+    grd.addColorStop(0, color)
+    grd.addColorStop(1, "rgba(255, 255, 255, 0)")
+    this.ctx.globalAlpha = 0.88
+    graphics.drawPoint(this.ctx, pixelLoc, {
+      radius: 28,
+      color: grd,
+    })
+    this.ctx.globalAlpha = 1
+    this.#drawSample(sample)
   }
 
   #drawAxes() {
@@ -178,7 +258,8 @@ export default class Chart {
     graphics.drawText(ctx, {
       text: options.axesLabels[0],
       loc: [canvas.width / 2, yMin + margin / 2],
-      size: margin * 0.4
+      size: margin * 0.4,
+      color: 'white'
     })
 
     ctx.save()
@@ -187,17 +268,19 @@ export default class Chart {
     graphics.drawText(ctx, {
       text: options.axesLabels[1],
       loc: [0, 0],
-      size: margin * 0.4
+      size: margin * 0.4,
+      color: 'white'
     })
     ctx.restore()
 
     ctx.beginPath()
+    ctx.fillStyle = 'white'
     ctx.moveTo(xMin, yMax)
     ctx.lineTo(xMin, yMin)
     ctx.lineTo(xMax, yMin)
     ctx.setLineDash([5, 4])
     ctx.lineWidth = 2
-    ctx.strokeStyle = 'blue'
+    ctx.strokeStyle = 'white'
     ctx.stroke()
     ctx.setLineDash([])
 
@@ -209,7 +292,8 @@ export default class Chart {
       loc: [this.pixelBounds.xMin, this.pixelBounds.yMin],
       align: 'left',
       vAlign: 'top',
-      size: margin * 0.28
+      size: margin * 0.28,
+      color: 'white'
     })
 
     graphics.drawText(ctx, {
@@ -217,7 +301,8 @@ export default class Chart {
       loc: [this.pixelBounds.xMax, this.pixelBounds.yMin],
       align: 'right',
       vAlign: 'top',
-      size: margin * 0.28
+      size: margin * 0.28,
+      color: 'white'
     })
 
     ctx.save()
@@ -229,7 +314,8 @@ export default class Chart {
       loc: [0, 0],
       align: 'left',
       vAlign: 'bottom',
-      size: margin * 0.28
+      size: margin * 0.28,
+      color: 'white'
     })
     ctx.restore()
 
@@ -242,17 +328,17 @@ export default class Chart {
       loc: [0, 0],
       align: 'right',
       vAlign: 'bottom',
-      size: margin * 0.28
+      size: margin * 0.28,
+      color: 'white'
     })
     ctx.restore()
   }
 
-  #drawSamples() {
-    const { ctx, samples, dataBounds, pixelBounds, options } = this
-    samples.forEach((sample) => {
-      const pixelLoc = mathUtils.remapPoint(dataBounds, pixelBounds, sample.point)
-      const style = options.styles[sample.label]
-      switch (options.icon) {
+  #drawSample(sample: SampleT) {
+    const { ctx, defaultDataBounds, pixelBounds, options } = this
+    const pixelLoc = mathUtils.remapPoint(defaultDataBounds, pixelBounds, sample.point)
+    const style = options.styles[sample.label]
+    switch (options.icon) {
       case 'text':
         graphics.drawText(ctx, {
           text: style.text,
@@ -270,8 +356,12 @@ export default class Chart {
           radius: 4,
           color: style.color
         })
-      }
-    })
+    }
+
+  }
+
+  #drawSamples(samples: SampleT[]) {
+    samples.forEach((this.#drawSample.bind(this)))
   }
 
 }

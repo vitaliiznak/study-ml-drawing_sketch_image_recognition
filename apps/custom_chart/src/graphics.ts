@@ -8,7 +8,7 @@ const drawPoint = (
   }:
     {
       radius?: number,
-      color?: string,
+      color?: string | CanvasGradient | CanvasPattern,
       icon?: string
     }) => {
   ctx.beginPath()
@@ -66,22 +66,26 @@ const generateImagesAndAddToStyles = (styles: {
     size: number,
     image?: HTMLImageElement
   }
-}, size = 20) => {
+}) => {
   for (let key in styles) {
     const style = styles[key]
     const canvas = document.createElement('canvas')
-    canvas.width = size + 8
-    canvas.height = size
+    canvas.width = style.size + 18
+    canvas.height = style.size + 18
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('Could not get 2d context')
     }
-    console.log('style', style)
 
     ctx.beginPath()
     // eslint-disable-next-line
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    canvas.height = style.size
+    ctx.font = `${style.size}px Courier New`
     if (colorHueMap[style.color] !== undefined) {
       // eslint-disable-next-line
+      console.log('colorHueMap[style.color]', colorHueMap[style.color])
       const hue = -45 + colorHueMap[style.color]
       ctx.filter = `
       brightness(2)
@@ -91,15 +95,11 @@ const generateImagesAndAddToStyles = (styles: {
       hue-rotate(${hue}deg)
       saturate(3)
       contrast(3)
-      `
+`
     } else {
       ctx.filter = 'grayscale(100%)'
     }
-
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.font = `${size}px Courier New`
-    ctx.fillText(style.text, size / 2, size / 2)
+    ctx.fillText(style.text, style.size / 2, style.size / 2)
     ctx.fill()
 
     style.image = new Image()

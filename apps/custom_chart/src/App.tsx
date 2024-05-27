@@ -1,11 +1,30 @@
-import { createEffect, createSignal, onCleanup, onMount, type Component } from 'solid-js'
-import { css } from '@emotion/css'
+import { createEffect, createSignal, on, onCleanup, onMount, type Component } from 'solid-js'
+import { css, cx } from '@emotion/css'
 import mathUtils from './mathUtils'
 import Chart, { SampleT } from './chart'
 import graphics from './graphics'
 
+
+function isElementInViewport(el: HTMLElement | Element) {
+  const rect = el.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+}
+
+const emphasizeRowStyle = cx(css`
+  background-color: yellow;
+`, 'emphasized-row')
+
 const App: Component = () => {
+  let tBodyRef: HTMLTableSectionElement | null = null
   const [canvasFontLoaded, setCanvasFontLoaded] = createSignal(false)
+  const [emphasizedRowId, setEmphasizedRowId] = createSignal<number | null>(null)
+
+  let chart: Chart | undefined
   let refCanvas: HTMLCanvasElement | null = null
   const N = 1000
   const samples: SampleT[] = Array.from({ length: N }, (_, i) => {
@@ -30,17 +49,42 @@ const App: Component = () => {
       basic: {
         text: '🚗',
         color: 'blue',
-        size: 24,
+        size: 34,
       },
       sport: {
         text: '🏎️',
         color: 'red',
-        size: 24,
+        size: 34,
 
+      }
+    },
+    onClick: (_e: MouseEvent, sample: SampleT) => {
+      console.log('sample', sample)
+      if (sample) {
+        setEmphasizedRowId(sample.id)
+      } else {
+        setEmphasizedRowId(null)
       }
     }
   }
 
+  createEffect(() => {
+
+    if (emphasizedRowId() && tBodyRef) {
+      const scrollTarget = tBodyRef.getElementsByClassName('emphasized-row')[0]
+      if (isElementInViewport(scrollTarget)) return
+      scrollTarget.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      })
+    }
+    // if (!emphasizedRowId() && tBodyRef) {
+    //   tBodyRef.scrollIntoView({
+    //     behavior: 'smooth',
+    //     block: 'start'
+    //   })
+    // }
+  })
 
   graphics.generateImagesAndAddToStyles(options.styles)
 
@@ -66,7 +110,7 @@ const App: Component = () => {
   createEffect(() => {
     if (canvasFontLoaded() && refCanvas) {
       setTimeout(() => {
-        const chart = new Chart(refCanvas!, samples, options)
+        chart = new Chart(refCanvas!, samples, options)
       }, 100)
     }
   })
@@ -106,9 +150,29 @@ const App: Component = () => {
                 <th>Price</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody ref={(ref) => {
+              tBodyRef = ref
+            }}>
               {samples.map(({ id, label, point }) => (
-                <tr>
+                <tr
+                  class={[
+                    emphasizedRowId() === id ? emphasizeRowStyle : '',
+                    css`
+                    cursor: pointer;
+                    &:hover {
+                      background-color: #444;
+                      color: white;
+                    }
+                  `
+                  ].join(' ')}
+                  onClick={
+                    () => {
+                      if (chart) {
+                        setEmphasizedRowId(id)
+                        chart.setActiveSampleById(id)
+                      }
+                    }
+                  }>
                   <td>{id}</td>
                   <td>{label}</td>
                   <td>{point[0].toFixed(0)}</td>
@@ -129,7 +193,7 @@ const App: Component = () => {
             <canvas width="780" height="780" id="chartCanvas"
               class={
                 css`
-                  background-color: whitesmoke;
+                  background-color: #333;
                 `}
               ref={(ref) => { refCanvas = ref }}
             ></canvas>
