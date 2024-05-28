@@ -20,7 +20,8 @@
       "vite/client"
     ],
     "noEmit": false,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "sourceMap": true
   },
   "include": [
     "src"

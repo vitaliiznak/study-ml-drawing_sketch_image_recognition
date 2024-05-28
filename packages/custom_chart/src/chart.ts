@@ -4,12 +4,12 @@ import mathUtils from './mathUtils'
 
 export type OptionsT = {
   axesLabels: string[];
-  icon: string
+  icon?: string
   styles: {
     [key: string]: {
-      text: string
+      text?: string
       color?: ColorT
-      size: number
+      size?: number
       image?: HTMLImageElement
     }
   }
@@ -68,7 +68,7 @@ export default class Chart {
     this.options = arguments[2]
     this.ctx = this.canvas.getContext('2d')!
     this.transparency = 0.45
-    this.margin = this.canvas.width * 0.05
+    this.margin = 40
     this.pixelBounds = this.#getPixelBounds()
     this.dataBounds = this.#getDataBounds()
     this.defaultDataBounds = this.dataBounds
@@ -119,7 +119,7 @@ export default class Chart {
         this.#updateDataBounds(newOffset)
       }
       const samplesPointsPixelBoulds = this.samples.map(s => mathUtils.remapPoint(this.dataBounds, this.pixelBounds, s.point))
-      const nearestIndex = mathUtils.getNearestPointIndex([pixelLoc[0] - 38, pixelLoc[1] - 8], samplesPointsPixelBoulds)
+      const nearestIndex = mathUtils.getNearestPointIndex([pixelLoc[0], pixelLoc[1] - 8], samplesPointsPixelBoulds)
       this.hoveredSample = this.samples[nearestIndex]
       const nearestPointPixelBounds = samplesPointsPixelBoulds[nearestIndex]
       const distanceBetweenMouseAndNearest = Math.hypot(
@@ -189,12 +189,12 @@ export default class Chart {
   }
 
   #getMousePos(e: MouseEvent, type: 'pixel' | 'data' = 'pixel') {
-    const { canvas, defaultDataBounds } = this
+    const { canvas, dataBounds } = this
     const rect = canvas.getBoundingClientRect()
     const pixelLoc: [number, number] = [
       e.clientX - rect.left,
       e.clientY - rect.top]
-    return type === 'data' ? mathUtils.remapPoint(this.pixelBounds, defaultDataBounds, pixelLoc) : pixelLoc
+    return type === 'data' ? mathUtils.remapPoint(this.pixelBounds, dataBounds, pixelLoc) : pixelLoc
   }
 
   #getPixelBounds() {
@@ -205,6 +205,8 @@ export default class Chart {
       yMin: canvas.height - margin,
       yMax: margin
     }
+
+
   }
 
   #getDataBounds() {
@@ -221,6 +223,9 @@ export default class Chart {
   #draw() {
     const { ctx, canvas } = this
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.globalAlpha = 1
+    this.#drawAxes()
+
     ctx.globalAlpha = this.transparency
     this.#drawSamples(this.samples)
 
@@ -230,21 +235,19 @@ export default class Chart {
     if (this.selectedSample) {
       this.#emphasizeSample(this.selectedSample, 'yellow')
     }
-    this.#drawAxes()
+
   }
 
   #emphasizeSample(sample: SampleT, color = 'white') {
-
-
-    const pixelLoc = mathUtils.remapPoint(this.defaultDataBounds, this.pixelBounds, sample.point)
-    pixelLoc[0] = pixelLoc[0] + 34
-    pixelLoc[1] = pixelLoc[1] + 8
-    const grd = this.ctx.createRadialGradient(pixelLoc[0], pixelLoc[1], 0, pixelLoc[0], pixelLoc[1], 128)
+    const pixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, sample.point)
+    pixelLoc[0] = pixelLoc[0]
+    pixelLoc[1] = pixelLoc[1]
+    const grd = this.ctx.createRadialGradient(pixelLoc[0], pixelLoc[1], 0, pixelLoc[0], pixelLoc[1], 50)
     grd.addColorStop(0, color)
     grd.addColorStop(1, "rgba(255, 255, 255, 0)")
     this.ctx.globalAlpha = 0.88
     graphics.drawPoint(this.ctx, pixelLoc, {
-      radius: 28,
+      radius: 18,
       color: grd,
     })
     this.ctx.globalAlpha = 1
@@ -336,12 +339,13 @@ export default class Chart {
 
   #drawSample(sample: SampleT) {
     const { ctx, defaultDataBounds, pixelBounds, options } = this
-    const pixelLoc = mathUtils.remapPoint(defaultDataBounds, pixelBounds, sample.point)
-    const style = options.styles[sample.label]
+    const pixelLoc = mathUtils.remapPoint(this.dataBounds, pixelBounds, sample.point)
+    const style = options.styles[sample.label] || {}
+
     switch (options.icon) {
       case 'text':
         graphics.drawText(ctx, {
-          text: style.text,
+          text: style.text || '',
           loc: pixelLoc,
           color: style.color,
           size: style.size

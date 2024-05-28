@@ -1,9 +1,19 @@
-import { createEffect, createMemo, createResource, onCleanup, type Component } from 'solid-js'
+import { createEffect, createMemo, createResource, createSignal, onCleanup, type Component } from 'solid-js'
 import { css } from '@emotion/css'
 
-import Chart, { mathUtils } from '@signumcode/chart'
+import Chart, { mathUtils, graphics } from '@signumcode/chart'
 
 const BASE_URL = 'http://localhost:3080'
+
+function isElementInViewport(el: HTMLElement | Element) {
+  const rect = el.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+}
 
 const fetchFeatures = async () => {
   const response = await fetch(
@@ -15,17 +25,19 @@ const fetchFeatures = async () => {
   const features = await response.json()
   return features
 }
-
 const flaggedUsers = [] as string[]
 
-
+type ChartConstructorParams = ConstructorParameters<typeof Chart>;
 
 const App: Component = () => {
+  let dataRowsContainerRef: HTMLElement | null = null
+
   const [features, { refetch: refetchFeatres }] = createResource(
     fetchFeatures
   )
+  const [emphasizedRowId, setEmphasizedRowId] = createSignal<number | null>(null)
 
-  let chartContainer: HTMLDivElement | undefined
+  let chartCanvas: HTMLCanvasElement | undefined
 
 
   const featuresTransformed = createMemo(() => {
@@ -44,33 +56,73 @@ const App: Component = () => {
   })
 
   createEffect(() => {
-    if (features.loading || chartContainer === undefined) {
+    if (features.loading || chartCanvas === undefined) {
       return null // or some loading state/data
     }
-    const options = {
-      width: 400,
-      heigh: 400,
-      hAxis: { title: features().featuresNames[0] },
-      vAxis: { title: features().featuresNames[1] }
+    const options: ChartConstructorParams[2] = {
+      axesLabels: features().featuresNames,
+      styles: {
+        car: { color: 'gray', text: '🚗' },
+        fish: { color: 'red', text: '🐟' },
+        house: { color: 'yellow', text: '🏠' },
+
+        tree: { color: 'green', text: '🌲' },
+        bicycle: { color: 'cyan', text: '🚲' },
+        guitar: { color: 'blue', text: '🎸' },
+
+        pencil: { color: 'magenta', text: '✏️' },
+        clock: { color: 'lightgray', text: '🕒' },
+
+      },
+      icon: 'text',
+      onClick: (e, sample) => {
+        if (sample) {
+          setEmphasizedRowId(sample.id)
+        } else {
+          setEmphasizedRowId(null)
+        }
+      }
     }
 
-    google.charts.load('current', { 'packages': ['corechart'] })
+    createEffect(() => {
 
-    google.charts.setOnLoadCallback(() => {
-      const data = new google.visualization.DataTable()
-      data.addColumn('number', features().featuresNames[0])
-      data.addColumn('number', features().featuresNames[1])
-      data.addRows(features().samples.map((s: any) => s.point))
-
-      const chart = new google.visualization.ScatterChart(chartContainer!)
-      chart.draw(data, options)
+      if (emphasizedRowId() && dataRowsContainerRef) {
+        const scrollTarget = dataRowsContainerRef.getElementsByClassName('emphasized-row')[0]
+        if (isElementInViewport(scrollTarget)) return
+        scrollTarget.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        })
+      }
+      // if (!emphasizedRowId() && tBodyRef) {
+      //   tBodyRef.scrollIntoView({
+      //     behavior: 'smooth',
+      //     block: 'start'
+      //   })
+      // }
     })
+
+    graphics.generateImagesAndAddToStyles(options.styles)
+
+    const chart = new Chart(chartCanvas, features().samples, options)
+
+    // google.charts.load('current', { 'packages': ['corechart'] })
+
+    // google.charts.setOnLoadCallback(() => {
+    //   const data = new google.visualization.DataTable()
+    //   data.addColumn('number', features().featuresNames[0])
+    //   data.addColumn('number', features().featuresNames[1])
+    //   data.addRows(features().samples.map((s: any) => s.point))
+
+    //   const chart = new google.visualization.ScatterChart(chartCanvas!)
+    //   chart.draw(data, options)
+    // })
 
   })
 
 
   onCleanup(() => {
-    google.visualization.events.removeAllListeners(window)
+    // google.visualization.events.removeAllListeners(window)
   })
 
 
@@ -78,15 +130,20 @@ const App: Component = () => {
     <div
       class={css`
         background-color: aqua;
+        height: max-content;
+        min-width: max-content;
+        width: auto;
       `}
     >
       <header>
         Data viewer
       </header>
-      <div class={css`display:flex;`}>
-
-
-        <div>
+      <div
+        class={css`
+          display:flex;
+          height:100%;
+        `}>
+        <div ref={ref => { dataRowsContainerRef = ref }}>
           {featuresTransformed()?.samplesGroupedByStudentId &&
             Object.keys(featuresTransformed()?.samplesGroupedByStudentId as any).map((studentId) => {
               const studentSamples =
@@ -94,13 +151,14 @@ const App: Component = () => {
               const studentName = (studentSamples[0] as any).studentName
               return (
                 <div
-                  class={css`
-                  display: flex;
-                  align-items: center;
-                  ${flaggedUsers.includes(studentName)
-                      ? 'filter: blur(5px);'
-                      : ''}
-                `}
+                  class={[
+                    css`
+                      display: flex;
+                      align-items: center;
+                      ${flaggedUsers.includes(studentName)
+                        ? 'filter: blur(5px);'
+                        : ''}`,
+                  ].join(' ')}
                 >
                   <label
                     class={css`
@@ -117,10 +175,15 @@ const App: Component = () => {
                   {studentSamples.map((sample: any) => {
                     return (
                       <div
-                        class={css`
+                        class={[css`
                         display: flex;
                         padding: 4px 2px;
-                      `}
+                      `,
+
+                        emphasizedRowId() === sample.id
+                          ? 'emphasized-row'
+                          : ''
+                        ].join(' ')}
                       >
                         <div
                           class={css`
@@ -151,13 +214,22 @@ const App: Component = () => {
               )
             })}
         </div>
-        <div class={css`min-width: 800px; height: 800px;`} >
-          <div ref={chartContainer}></div>
+        <div
+          class={css`
+            min-width: 800px; 
+            height: 800px;
+            position:sticky; top: 40; left: 40;
+            background-color: darkgray;
+          `} >
+          <canvas width={700} height={700}
+            ref={(ref) => {
+              chartCanvas = ref
+            }}></canvas>
         </div>
 
       </div>
 
-    </div>
+    </div >
   )
 }
 

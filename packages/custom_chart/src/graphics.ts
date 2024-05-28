@@ -45,7 +45,7 @@ const drawText = (ctx: CanvasRenderingContext2D, {
   ctx.fillText(text, ...loc)
 }
 
-export type ColorT = 'red' | 'orange' | 'yellow' | 'lime' | 'green' | 'cyan' | 'blue' | 'purple' | 'magenta' | 'pink'
+export type ColorT = 'red' | 'orange' | 'yellow' | 'lime' | 'green' | 'cyan' | 'blue' | 'purple' | 'magenta' | 'pink' | 'lightgray' | 'gray'
 
 const colorHueMap: {
   [key in ColorT]: number
@@ -60,18 +60,21 @@ const colorHueMap: {
   purple: 280,
   magenta: 300,
   pink: 320,
+  lightgray: 0, // No hue adjustment needed
+  gray: 0       // No hue adjustment needed
 }
 
 const generateImagesAndAddToStyles = (styles: {
   [key: string]: {
-    text: string,
+    text?: string,
     color?: ColorT,
-    size: number,
+    size?: number,
     image?: HTMLImageElement
   }
 }) => {
   for (let key in styles) {
     const style = styles[key]
+    style.size = style.size || 10
     const canvas = document.createElement('canvas')
     canvas.width = style.size + 18
     canvas.height = style.size + 18
@@ -86,7 +89,7 @@ const generateImagesAndAddToStyles = (styles: {
     ctx.textBaseline = 'middle'
     canvas.height = style.size
     ctx.font = `${style.size}px Courier New`
-    if (colorHueMap[style.color as ColorT] !== undefined) {
+    if (colorHueMap[style.color as ColorT] !== undefined && style.color !== 'lightgray' && style.color !== 'gray') {
       // eslint-disable-next-line
       const hue = -45 + colorHueMap[style.color as ColorT]
       ctx.filter = `
@@ -99,9 +102,9 @@ const generateImagesAndAddToStyles = (styles: {
       contrast(3)
 `
     } else {
-      ctx.filter = 'grayscale(100%)'
+      ctx.filter = style.color === 'lightgray' ? 'brightness(1.25) grayscale(100%)' : 'grayscale(100%)';
     }
-    ctx.fillText(style.text, style.size / 2, style.size / 2)
+    ctx.fillText(style.text || '', style.size / 2, style.size / 2)
     ctx.fill()
 
     style.image = new Image()
