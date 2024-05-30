@@ -223,17 +223,24 @@ export default class Chart {
   #draw() {
     const { ctx, canvas } = this
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.globalAlpha = 1
-    this.#drawAxes()
+
 
     ctx.globalAlpha = this.transparency
     this.#drawSamples(this.samples)
+
+    ctx.clearRect(0, 0, this.pixelBounds.xMin, this.canvas.height)
+
+    ctx.clearRect(0, this.pixelBounds.yMin, this.canvas.width, this.canvas.height)
+
+    ctx.globalAlpha = 1
+    this.#drawAxes()
+
 
     if (this.hoveredSample) {
       this.#emphasizeSample(this.hoveredSample)
     }
     if (this.selectedSample) {
-      this.#emphasizeSample(this.selectedSample, 'yellow')
+      this.#emphasizeSample(this.selectedSample, 'orange')
     }
 
   }

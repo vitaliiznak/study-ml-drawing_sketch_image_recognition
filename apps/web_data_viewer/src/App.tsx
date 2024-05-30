@@ -1,7 +1,8 @@
 import { createEffect, createMemo, createResource, createSignal, onCleanup, type Component } from 'solid-js'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 
-import Chart, { mathUtils, graphics } from '@signumcode/chart'
+import Chart, { graphics } from '@signumcode/chart'
+import { SampleT } from '@signumcode/chart/dist/chart';
 
 const BASE_URL = 'http://localhost:3080'
 
@@ -26,11 +27,19 @@ const fetchFeatures = async () => {
   return features
 }
 const flaggedUsers = [] as string[]
-
 type ChartConstructorParams = ConstructorParameters<typeof Chart>;
+
+const emphasizeRowStyle = cx(css`
+  background-color: orange  !important;;
+   & img, & div {
+    background-color: orange !important;
+  }
+
+`, 'emphasized-row')
 
 const App: Component = () => {
   let dataRowsContainerRef: HTMLElement | null = null
+  let chart: Chart | undefined
 
   const [features, { refetch: refetchFeatres }] = createResource(
     fetchFeatures
@@ -75,7 +84,7 @@ const App: Component = () => {
 
       },
       icon: 'text',
-      onClick: (e, sample) => {
+      onClick: (_e, sample) => {
         if (sample) {
           setEmphasizedRowId(sample.id)
         } else {
@@ -104,7 +113,7 @@ const App: Component = () => {
 
     graphics.generateImagesAndAddToStyles(options.styles)
 
-    const chart = new Chart(chartCanvas, features().samples, options)
+    chart = new Chart(chartCanvas, features().samples, options)
 
     // google.charts.load('current', { 'packages': ['corechart'] })
 
@@ -125,11 +134,17 @@ const App: Component = () => {
     // google.visualization.events.removeAllListeners(window)
   })
 
+  const onSample = (sample: SampleT) => {
+    if (chart) {
+      setEmphasizedRowId(sample.id)
+      chart.setActiveSampleById(sample.id)
+    }
+  }
 
   return (
     <div
       class={css`
-        background-color: aqua;
+        background-color: skyblue;
         height: max-content;
         min-width: max-content;
         width: auto;
@@ -172,42 +187,40 @@ const App: Component = () => {
                     {studentName}
                   </label>
 
-                  {studentSamples.map((sample: any) => {
+                  {studentSamples.map((sample: SampleT) => {
                     return (
                       <div
                         class={[css`
-                        display: flex;
-                        padding: 4px 2px;
-                      `,
-
+                          background-color: whitesmoke;
+                          margin: 4px;
+                        `,
                         emphasizedRowId() === sample.id
-                          ? 'emphasized-row'
+                          ? emphasizeRowStyle
                           : ''
                         ].join(' ')}
+
+                        onClick={() => {
+                          onSample(sample)
+                        }}
                       >
                         <div
                           class={css`
-                          background-color: white;
-                        `}
-                        >
-                          <div
-                            class={css`
                             text-align: center;
                             width: 100%;
                             overflow: hidden;
                           `}
-                          >
-                            {(sample as any).label}
-                          </div>
-                          <img
-                            class={css`
+                        >
+                          {(sample as any).label}
+                        </div>
+                        <img
+                          class={css`
                             width: 100px;
                           `}
-                            src={`${BASE_URL}/img/${sample.id}.png`}
-                            alt={(sample as any).label}
-                          ></img>
-                        </div>
+                          src={`${BASE_URL}/img/${sample.id}.png`}
+                          alt={(sample as any).label}
+                        ></img>
                       </div>
+
                     )
                   })}
                 </div>
@@ -216,15 +229,19 @@ const App: Component = () => {
         </div>
         <div
           class={css`
-            min-width: 800px; 
-            height: 800px;
-            position:sticky; top: 40; left: 40;
-            background-color: darkgray;
+            height: 100%;
           `} >
-          <canvas width={700} height={700}
-            ref={(ref) => {
-              chartCanvas = ref
-            }}></canvas>
+          <div
+            class={css`
+            position:fixed; top: 40;
+            background-color: grey;
+          `} >
+            <canvas width={800} height={800}
+              ref={(ref) => {
+                chartCanvas = ref
+              }}></canvas>
+          </div>
+
         </div>
 
       </div>
