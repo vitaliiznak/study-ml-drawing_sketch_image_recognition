@@ -18,16 +18,14 @@ const drawPoint = (
 }
 
 
-const drawText = (ctx: CanvasRenderingContext2D, {
+const drawText = (ctx: CanvasRenderingContext2D, loc: [number, number], {
   text,
-  loc,
   align = 'center',
   vAlign = 'middle',
   size = 28,
   color = 'black'
 }: {
   text: string,
-  loc: [number, number],
   align?: CanvasTextAlign,
   vAlign?: CanvasTextBaseline,
   size?: number,
@@ -76,19 +74,19 @@ const generateImagesAndAddToStyles = (styles: {
     const style = styles[key]
     style.size = style.size || 10
     const canvas = document.createElement('canvas')
-    canvas.width = style.size + 18
-    canvas.height = style.size + 18
+    canvas.width = style.size
+    canvas.height = style.size + 20
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('Could not get 2d context')
     }
-
-    ctx.beginPath()
     // eslint-disable-next-line
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'top'
     canvas.height = style.size
     ctx.font = `${style.size}px Courier New`
+    ctx.beginPath()
+
     if (colorHueMap[style.color as ColorT] !== undefined && style.color !== 'lightgray' && style.color !== 'gray') {
       // eslint-disable-next-line
       const hue = -45 + colorHueMap[style.color as ColorT]
@@ -104,7 +102,7 @@ const generateImagesAndAddToStyles = (styles: {
     } else {
       ctx.filter = style.color === 'lightgray' ? 'brightness(1.25) grayscale(100%)' : 'grayscale(100%)';
     }
-    ctx.fillText(style.text || '', style.size / 2, style.size / 2)
+    ctx.fillText(style.text || '', 0, canvas.height)
     ctx.fill()
 
     style.image = new Image()
@@ -114,7 +112,17 @@ const generateImagesAndAddToStyles = (styles: {
 
 const drawImage = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, loc: [number, number]) => {
   ctx.beginPath()
-  ctx.drawImage(image, loc[0] - image.width / 2, loc[1] - image.height / 2)
+  ctx.drawImage(
+    image,
+    loc[0] - image.width / 2,
+    loc[1] - image.height / 2,
+    image.width,
+    image.height
+  )
+  // ctx.strokeStyle = 'blue';
+  // ctx.lineWidth = 1;
+  // ctx.strokeRect(loc[0] - image.width / 2, loc[1] - image.height / 2, image.width, image.height)
+  // ctx.stroke()
   ctx.fill()
 }
 

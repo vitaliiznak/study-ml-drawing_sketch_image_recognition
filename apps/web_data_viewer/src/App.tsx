@@ -1,13 +1,14 @@
 import { createEffect, createResource, createSignal, onCleanup, onMount, type Component } from 'solid-js'
 import { css } from '@emotion/css'
 
-import Chart, { graphics } from '@signumcode/chart'
+import Chart, { graphics, mathUtils } from '@signumcode/chart'
 import { SampleT } from '@signumcode/chart/dist/chart'
 import DataRows from './DataRows'
 import { BASE_URL } from './constants'
 import SketchPad from './Sketchpad/sketchpad'
 
-
+const SKETCPAD_WIDTH = 400
+const SKETCPAD_HEIGHT = 400
 
 const fetchFeatures = async () => {
   const response = await fetch(
@@ -71,6 +72,12 @@ const inUse = [
 
 const inUseFunctions = inUse.map((feature) => feature.function)
 
+const classify = (point: [number, number], samples: SampleT[]) => {
+  const samplePoints = samples.map((s) => s.point) as [number, number][]
+  const index = mathUtils.getNearestPointIndex(point, samplePoints)
+  return samples[index].label
+}
+
 
 const App: Component = () => {
 
@@ -79,12 +86,29 @@ const App: Component = () => {
   let chartCanvas: HTMLCanvasElement | undefined
   let sketchpad: SketchPad
 
+  const [predictedLabel, setPredictedLabel] = createSignal('')
   const [isSketchpadVisible, setIsScketchpadVisible] = createSignal(true)
   const [emphasizedRowId, setEmphasizedRowId] = createSignal<number | null>(null)
 
   const [features, { refetch: refetchFeatres }] = createResource(
     fetchFeatures
   )
+
+  const onDrawingsUpdate =  (paths: [number, number][][] ) => {
+
+    const point = inUseFunctions.map((func) => func(paths)) as [number, number]
+    const predictedLabel = classify(point, features().samples)
+    const label = predictedLabel
+
+    const sample = {
+      id: -1,
+      label: label || 'dynamic point',
+      point
+    }
+    chart.showDynamicSample(sample)
+   
+    setPredictedLabel(predictedLabel)
+  }
 
 
 
@@ -99,19 +123,19 @@ const App: Component = () => {
     const options: ChartConstructorParams[2] = {
       axesLabels: features().featuresNames,
       styles: {
-        car: { color: 'gray', text: '🚗', size: 22 },
-        fish: { color: 'red', text: '🐟', size: 22 },
-        house: { color: 'yellow', text: '🏠', size: 22 },
+        car: { color: 'gray', text: '🚗', size: 28 },
+        fish: { color: 'red', text: '🐟', size: 28 },
+        house: { color: 'yellow', text: '🏠', size: 28 },
 
-        tree: { color: 'green', text: '🌲', size: 22 },
-        bicycle: { color: 'cyan', text: '🚲' , size: 22},
-        guitar: { color: 'blue', text: '🎸', size: 22 },
+        tree: { color: 'green', text: '🌲', size: 28 },
+        bicycle: { color: 'cyan', text: '🚲' , size: 28},
+        guitar: { color: 'blue', text: '🎸', size: 28 },
 
-        pencil: { color: 'magenta', text: '🖌️' , size: 22},
-        clock: { color: 'lightgray', text: '🕒' , size: 22},
+        pencil: { color: 'magenta', text: '🖌️' , size: 28},
+        clock: { color: 'lightgray', text: '🕒' , size: 28},
 
       },
-      icon: 'text',
+      icon: 'image',
       onClick: (_e, sample) => {
         if (sample) {
           setEmphasizedRowId(sample.id)
@@ -126,13 +150,7 @@ const App: Component = () => {
       chart = new Chart(chartCanvas!, features().samples, options)
 
       sketchpad = new SketchPad(sketchpadCanvasRef, {
-        onUpdate: (paths) => {
-          const sample = {
-            point: inUseFunctions.map((func) => func(paths))
-          }
-          console.log(sample)
-          chart.showDynamicPoint(sample)
-        }
+        onUpdate: onDrawingsUpdate
       })
 
     }, 400)
@@ -140,7 +158,7 @@ const App: Component = () => {
 
   createEffect(() => {
     if(!isSketchpadVisible()){
-      chart?.hideDynamicPoint()
+      chart?.hideDynamicSample()
     } else {
       sketchpad?.triggerUpdate()
     }
@@ -166,6 +184,7 @@ const App: Component = () => {
       <header>
         Data viewer
       </header>
+   
       <div
         class={css`
           display:flex;
@@ -178,27 +197,58 @@ const App: Component = () => {
             flex-direction:column;
           `}
         >
+         
+          <DataRows features={features} emphasizedRowId={emphasizedRowId} onSample={onDataRowsSampleClick} />
+        </div>
+
+  
+        <div
+          class={css`
+            height: 100%;
+            min-width: 800px;
+            width: fit-content;
+            position:fixed; 
+            top: 20px;
+            right: 0;
+          `} >
+            
           <div
             class={css`
               label: sketchpad-container;
+              position: absolute;
+              top: 0px;
+              left: -${SKETCPAD_WIDTH + 20}px;
               padding: 8px;
               align-self: flex-end;
-              position: fixed;
-              top: 38px;
               display: flex;
               flex-direction: column;
               background: rgba(40, 40, 40, 0.4);
               display: ${isSketchpadVisible() ? 'block' : 'none'};
             `}
           >
+            <div>
+             
+              <div
+                class={
+                  css`
+                  color: white;
+                  font-weight: 900;
+                  font-size: 24px;
+                  `
+                }
+              >
+                {predictedLabel() ? `Is it a ${predictedLabel()}?` : 'Draw something!'}
+              </div>
+        
+            </div>
             <canvas
               class={css`
                 label: sketchpad-canvas;
                 background-color: white;
                 box-shadow: 0px 0px 10px 2px black;
               `}
-              width="400"
-              height="400"
+              width={SKETCPAD_WIDTH}
+              height={SKETCPAD_HEIGHT}
               ref={(el) => (sketchpadCanvasRef = el)}
             /><br />
             <button
@@ -214,42 +264,38 @@ const App: Component = () => {
                 sketchpad.undo()
               }}>Undo </button>
           </div>
-          <DataRows features={features} emphasizedRowId={emphasizedRowId} onSample={onDataRowsSampleClick} />
-        </div>
+   
 
-  
-        <div
-          class={css`
-            height: 100%;
-          `} >
-          <button
-            onClick={
-              () => {
-                setIsScketchpadVisible(!isSketchpadVisible())
-              }}
-            class={css`
-              position:fixed; 
-              top: 10px;
+          <div>
+            <button
+              onClick={
+                () => {
+                  setIsScketchpadVisible(!isSketchpadVisible())
+                }}
+              class={css`
+              position:relative; 
+              top: 0px;
               background-color: orange;
               color: whitesmoke;
               font-size: 20px;
               font-weight: bold;
               z-index: 300;
          `}
-          >Toggle Sketchpad</button>
-          <div
-            class={css`
-            position:fixed; 
-            top: 38px;
-            background-color: white;
-            z-index: 100;
+            >Toggle Sketchpad</button>
+            <div
+              class={css`
+                background-color: white;
+                z-index: 100;
           `} >
-            <canvas width={800} height={800}
-              ref={(ref) => {
-                chartCanvas = ref
-              }}></canvas>
+              <canvas width={800} height={800}
+                ref={(ref) => {
+                  chartCanvas = ref
+                }}></canvas>
+            </div>
           </div>
         </div>
+       
+
       </div>
     </div>
 

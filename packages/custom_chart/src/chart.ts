@@ -52,7 +52,7 @@ export default class Chart {
     isDragging: boolean
   }
 
-  dynamicPoint: SampleT | undefined
+  dynamicSample: SampleT | undefined
 
   hoveredSample: SampleT | undefined
   selectedSample: SampleT | undefined
@@ -98,13 +98,13 @@ export default class Chart {
     this.#draw()
   }
 
-  hideDynamicPoint() {
-    this.dynamicPoint = undefined
+  hideDynamicSample() {
+    this.dynamicSample = undefined
     this.#draw()
   }
 
-  showDynamicPoint(sample: SampleT) {
-    this.dynamicPoint = sample
+  showDynamicSample(sample: SampleT) {
+    this.dynamicSample = sample
     this.#draw()
   }
 
@@ -238,16 +238,17 @@ export default class Chart {
 
     ctx.globalAlpha = this.transparency
     this.#drawSamples(this.samples)
-    if (this.dynamicPoint) {
-      const pixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, this.dynamicPoint.point)
+    if (this.dynamicSample) {
+      const pixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, this.dynamicSample.point)
       graphics.drawPoint(ctx, pixelLoc, {
         radius: 70,
         color: 'rgba(21, 21, 21, 0.7)'
       })
 
-      graphics.drawPoint(ctx, pixelLoc, {
-        radius: 14,
-        color: 'red'
+      graphics.drawText(ctx, pixelLoc, {
+        text: this.dynamicSample.label,
+        size: 40,
+        color: 'white'
       })
     }
 
@@ -268,14 +269,12 @@ export default class Chart {
 
   }
 
-  #emphasizeSample(sample: SampleT, color = 'white') {
+  #emphasizeSample(sample: SampleT, color = 'pink') {
     const pixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, sample.point)
-    pixelLoc[0] = pixelLoc[0]
-    pixelLoc[1] = pixelLoc[1]
     const grd = this.ctx.createRadialGradient(pixelLoc[0], pixelLoc[1], 0, pixelLoc[0], pixelLoc[1], 50)
     grd.addColorStop(0, color)
     grd.addColorStop(1, "rgba(255, 255, 255, 0)")
-    this.ctx.globalAlpha = 0.88
+    this.ctx.globalAlpha = 1
     graphics.drawPoint(this.ctx, pixelLoc, {
       radius: 18,
       color: grd,
@@ -288,9 +287,8 @@ export default class Chart {
     const { ctx, canvas, options, margin } = this
     const { xMin, xMax, yMin, yMax } = this.pixelBounds
 
-    graphics.drawText(ctx, {
+    graphics.drawText(ctx, [canvas.width / 2, yMin + margin / 2], {
       text: options.axesLabels[0],
-      loc: [canvas.width / 2, yMin + margin / 2],
       size: margin * 0.4,
       color: 'black'
     })
@@ -298,9 +296,8 @@ export default class Chart {
     ctx.save()
     ctx.translate(xMin - margin / 2, canvas.height / 2)
     ctx.rotate(-Math.PI / 2)
-    graphics.drawText(ctx, {
+    graphics.drawText(ctx, [0, 0], {
       text: options.axesLabels[1],
-      loc: [0, 0],
       size: margin * 0.4,
       color: 'black'
     })
@@ -320,18 +317,16 @@ export default class Chart {
     const dataMin = mathUtils.remapPoint(this.pixelBounds, this.dataBounds, [this.pixelBounds.xMin, this.pixelBounds.yMin])
     const dataMax = mathUtils.remapPoint(this.pixelBounds, this.dataBounds, [this.pixelBounds.xMax, this.pixelBounds.yMax])
 
-    graphics.drawText(ctx, {
+    graphics.drawText(ctx, [this.pixelBounds.xMin, this.pixelBounds.yMin], {
       text: `${dataMin[0].toFixed(1)}`,
-      loc: [this.pixelBounds.xMin, this.pixelBounds.yMin],
       align: 'left',
       vAlign: 'top',
       size: margin * 0.28,
       color: 'black'
     })
 
-    graphics.drawText(ctx, {
+    graphics.drawText(ctx, [this.pixelBounds.xMax, this.pixelBounds.yMin], {
       text: `${dataMax[0].toFixed(1)}`,
-      loc: [this.pixelBounds.xMax, this.pixelBounds.yMin],
       align: 'right',
       vAlign: 'top',
       size: margin * 0.28,
@@ -342,9 +337,8 @@ export default class Chart {
     ctx.translate(this.pixelBounds.xMin, this.pixelBounds.yMin)
     ctx.rotate(-Math.PI / 2)
 
-    graphics.drawText(ctx, {
+    graphics.drawText(ctx, [0, 0], {
       text: `${dataMin[1].toFixed(1)}`,
-      loc: [0, 0],
       align: 'left',
       vAlign: 'bottom',
       size: margin * 0.28,
@@ -356,9 +350,8 @@ export default class Chart {
     ctx.translate(this.pixelBounds.xMin, this.pixelBounds.yMax)
     ctx.rotate(-Math.PI / 2)
 
-    graphics.drawText(ctx, {
+    graphics.drawText(ctx, [0, 0], {
       text: `${dataMax[1].toFixed(1)}`,
-      loc: [0, 0],
       align: 'right',
       vAlign: 'bottom',
       size: margin * 0.28,
@@ -374,16 +367,14 @@ export default class Chart {
 
     switch (options.icon) {
       case 'text':
-        graphics.drawText(ctx, {
+        graphics.drawText(ctx, pixelLoc, {
           text: style.text || '',
-          loc: pixelLoc,
           color: style.color,
           size: style.size
         })
         break
       case 'image':
-
-        ctx.drawImage(style.image!, pixelLoc[0], pixelLoc[1])
+        graphics.drawImage(ctx, style.image!, pixelLoc)
         break
       default:
         graphics.drawPoint(ctx, pixelLoc, {
