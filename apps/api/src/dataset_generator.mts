@@ -3,7 +3,7 @@ import { createCanvas } from 'canvas'
 import { drawPaths } from './draw.mjs'
 import { printProgress } from './utils.mjs'
 import { CanvasRenderingContext2D } from 'canvas'
-import { IMG_DIR, JSON_DIR, RAW_DATA_DIR, SAMPLES, SAMPLES_JS } from './constants.mjs'
+import { IMG_DIR, JSON_DIR, RAW_DATA_DIR, SAMPLES } from './constants.mjs'
 
 
 const canvas = createCanvas(400, 400)
@@ -35,7 +35,8 @@ async function init() {
 
   fs.writeFileSync(SAMPLES, JSON.stringify(samples, null, 2))
 
-  fs.writeFileSync(SAMPLES_JS, JSON.stringify(samples, null, 2))
+
+
 }
 
 async function generateImageFile(paths: [number, number][][], imgPath: string) {

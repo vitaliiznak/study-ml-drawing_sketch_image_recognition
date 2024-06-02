@@ -242,11 +242,11 @@ export default class Chart {
       const pixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, this.dynamicPoint.point)
       graphics.drawPoint(ctx, pixelLoc, {
         radius: 70,
-        color: 'rgba(255, 255, 255, 0.7)'
+        color: 'rgba(21, 21, 21, 0.7)'
       })
 
       graphics.drawPoint(ctx, pixelLoc, {
-        radius: 8,
+        radius: 14,
         color: 'red'
       })
     }
@@ -292,7 +292,7 @@ export default class Chart {
       text: options.axesLabels[0],
       loc: [canvas.width / 2, yMin + margin / 2],
       size: margin * 0.4,
-      color: 'white'
+      color: 'black'
     })
 
     ctx.save()
@@ -302,18 +302,18 @@ export default class Chart {
       text: options.axesLabels[1],
       loc: [0, 0],
       size: margin * 0.4,
-      color: 'white'
+      color: 'black'
     })
     ctx.restore()
 
     ctx.beginPath()
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = 'black'
     ctx.moveTo(xMin, yMax)
     ctx.lineTo(xMin, yMin)
     ctx.lineTo(xMax, yMin)
     ctx.setLineDash([5, 4])
     ctx.lineWidth = 2
-    ctx.strokeStyle = 'white'
+    ctx.strokeStyle = 'black'
     ctx.stroke()
     ctx.setLineDash([])
 
@@ -326,7 +326,7 @@ export default class Chart {
       align: 'left',
       vAlign: 'top',
       size: margin * 0.28,
-      color: 'white'
+      color: 'black'
     })
 
     graphics.drawText(ctx, {
@@ -335,7 +335,7 @@ export default class Chart {
       align: 'right',
       vAlign: 'top',
       size: margin * 0.28,
-      color: 'white'
+      color: 'black'
     })
 
     ctx.save()
@@ -348,7 +348,7 @@ export default class Chart {
       align: 'left',
       vAlign: 'bottom',
       size: margin * 0.28,
-      color: 'white'
+      color: 'black'
     })
     ctx.restore()
 
@@ -362,7 +362,7 @@ export default class Chart {
       align: 'right',
       vAlign: 'bottom',
       size: margin * 0.28,
-      color: 'white'
+      color: 'black'
     })
     ctx.restore()
   }
@@ -387,7 +387,7 @@ export default class Chart {
         break
       default:
         graphics.drawPoint(ctx, pixelLoc, {
-          radius: 4,
+          radius: 18,
           color: style.color
         })
     }

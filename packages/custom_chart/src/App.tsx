@@ -49,12 +49,12 @@ const App: Component = () => {
       basic: {
         text: '🚗',
         color: 'blue',
-        size: 34,
+        size: 38,
       },
       sport: {
         text: '🏎️',
         color: 'red',
-        size: 34,
+        size: 38,
       }
     },
     onClick: (_e, sample) => {

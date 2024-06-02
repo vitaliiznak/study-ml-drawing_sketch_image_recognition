@@ -13,7 +13,7 @@ export const IMG_DIR = DATASET_DIR + '/img'
 
 
 export const JS_OBJESCTS_DIR = path.join(__dirname, '../../../packages/shared_data/json_objects')
-export const SAMPLES_JS = JS_OBJESCTS_DIR + '/samples.json'
+
 
 export const SAMPLES = DATASET_DIR + '/samples.json'
 export const FEATURES = DATASET_DIR + '/features.json'

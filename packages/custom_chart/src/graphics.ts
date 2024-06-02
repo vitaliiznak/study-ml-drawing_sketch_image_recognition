@@ -3,7 +3,7 @@ const drawPoint = (
   ctx: CanvasRenderingContext2D,
   loc: [number, number],
   {
-    radius = 4,
+    radius = 8,
     color = 'black'
   }:
     {
@@ -23,7 +23,7 @@ const drawText = (ctx: CanvasRenderingContext2D, {
   loc,
   align = 'center',
   vAlign = 'middle',
-  size = 18,
+  size = 28,
   color = 'black'
 }: {
   text: string,

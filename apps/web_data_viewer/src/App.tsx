@@ -22,9 +22,6 @@ const fetchFeatures = async () => {
 
 type ChartConstructorParams = ConstructorParameters<typeof Chart>;
 
-
-
-
 const getPathCount = (paths: [number, number][][]) => {
   return paths.length
 }
@@ -33,6 +30,47 @@ const getPointCount = (paths: [number, number][][]) => {
   const points = paths.flat()
   return points.length
 }
+
+const getHeights = (paths: [number, number][][]) => {
+  const points = paths.flat()
+  const heights = points.map((point) => point[1])
+  const min = Math.min(...heights)
+  const max = Math.max(...heights)
+  return max - min
+}
+
+const getWidths = (paths: [number, number][][]) => {
+  const points = paths.flat()
+  const widths = points.map((point) => point[0])
+  const min = Math.min(...widths)
+  const max = Math.max(...widths)
+  return max - min
+}
+
+const inUse = [
+  // {
+  //   name: 'Path Count',
+  //   function: getPathCount
+  // },
+  // {
+  //   name: 'Point Count',
+  //   function: getPointCount
+  // },
+  {
+    name: 'Widths',
+    function: getWidths
+  },
+  {
+    name: 'Heights',
+    function: getHeights
+  }
+]
+
+
+
+
+const inUseFunctions = inUse.map((feature) => feature.function)
+
 
 const App: Component = () => {
 
@@ -49,19 +87,6 @@ const App: Component = () => {
   )
 
 
-  onMount(() => {
-    sketchpad = new SketchPad(sketchpadCanvasRef, {
-      onUpdate: (paths) => {
-        const sample = {
-          point: [
-            getPathCount(paths),
-            getPointCount(paths)
-          ],
-        }
-        chart.showDynamicPoint(sample)
-      }
-    })
-  })
 
   onCleanup(() => {
     // google.visualization.events.removeAllListeners(window)
@@ -74,16 +99,16 @@ const App: Component = () => {
     const options: ChartConstructorParams[2] = {
       axesLabels: features().featuresNames,
       styles: {
-        car: { color: 'gray', text: '🚗' },
-        fish: { color: 'red', text: '🐟' },
-        house: { color: 'yellow', text: '🏠' },
+        car: { color: 'gray', text: '🚗', size: 22 },
+        fish: { color: 'red', text: '🐟', size: 22 },
+        house: { color: 'yellow', text: '🏠', size: 22 },
 
-        tree: { color: 'green', text: '🌲' },
-        bicycle: { color: 'cyan', text: '🚲' },
-        guitar: { color: 'blue', text: '🎸' },
+        tree: { color: 'green', text: '🌲', size: 22 },
+        bicycle: { color: 'cyan', text: '🚲' , size: 22},
+        guitar: { color: 'blue', text: '🎸', size: 22 },
 
-        pencil: { color: 'magenta', text: '✏️' },
-        clock: { color: 'lightgray', text: '🕒' },
+        pencil: { color: 'magenta', text: '🖌️' , size: 22},
+        clock: { color: 'lightgray', text: '🕒' , size: 22},
 
       },
       icon: 'text',
@@ -100,6 +125,16 @@ const App: Component = () => {
     setTimeout(() => {
       chart = new Chart(chartCanvas!, features().samples, options)
 
+      sketchpad = new SketchPad(sketchpadCanvasRef, {
+        onUpdate: (paths) => {
+          const sample = {
+            point: inUseFunctions.map((func) => func(paths))
+          }
+          console.log(sample)
+          chart.showDynamicPoint(sample)
+        }
+      })
+
     }, 400)
   })
 
@@ -107,7 +142,7 @@ const App: Component = () => {
     if(!isSketchpadVisible()){
       chart?.hideDynamicPoint()
     } else {
-      sketchpad.triggerUpdate()
+      sketchpad?.triggerUpdate()
     }
   })
 
@@ -206,7 +241,7 @@ const App: Component = () => {
             class={css`
             position:fixed; 
             top: 38px;
-            background-color: grey;
+            background-color: white;
             z-index: 100;
           `} >
             <canvas width={800} height={800}
