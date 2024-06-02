@@ -52,6 +52,8 @@ export default class Chart {
     isDragging: boolean
   }
 
+  dynamicPoint: SampleT | undefined
+
   hoveredSample: SampleT | undefined
   selectedSample: SampleT | undefined
   #onClick?: (e: MouseEvent, point: SampleT | undefined) => any
@@ -93,6 +95,16 @@ export default class Chart {
 
   setActiveSampleById(sampleId: number) {
     this.selectedSample = this.samples.find(s => s.id === sampleId)
+    this.#draw()
+  }
+
+  hideDynamicPoint() {
+    this.dynamicPoint = undefined
+    this.#draw()
+  }
+
+  showDynamicPoint(sample: SampleT) {
+    this.dynamicPoint = sample
     this.#draw()
   }
 
@@ -138,7 +150,7 @@ export default class Chart {
       const dir = Math.sign(e.deltaY)
       const stepRatio = 0.08
       const step = dir > 0 ? 1 + stepRatio : 1 - stepRatio
-      if ((dataTrans.scale < 0.04 && dir < 0) || (dataTrans.scale > 4 && dir > 0)) return
+      if ((dataTrans.scale < 0.002 && dir < 0) || (dataTrans.scale > 30 && dir > 0)) return
       dataTrans.scale *= step
       this.#updateDataBounds(dataTrans.offset, step)
 
@@ -151,7 +163,6 @@ export default class Chart {
       dataTrans.offset = mathUtils.add(dataTrans.offset, dragInfo.offset)
       dragInfo.isDragging = false
       dragInfo.start = [0, 0]
-
     }
 
     canvas.onclick = (e) => {
@@ -227,6 +238,18 @@ export default class Chart {
 
     ctx.globalAlpha = this.transparency
     this.#drawSamples(this.samples)
+    if (this.dynamicPoint) {
+      const pixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, this.dynamicPoint.point)
+      graphics.drawPoint(ctx, pixelLoc, {
+        radius: 70,
+        color: 'rgba(255, 255, 255, 0.7)'
+      })
+
+      graphics.drawPoint(ctx, pixelLoc, {
+        radius: 8,
+        color: 'red'
+      })
+    }
 
     ctx.clearRect(0, 0, this.pixelBounds.xMin, this.canvas.height)
 

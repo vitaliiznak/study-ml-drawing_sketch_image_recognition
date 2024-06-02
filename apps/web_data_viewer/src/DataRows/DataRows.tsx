@@ -1,19 +1,19 @@
 
 import { Accessor, Resource, createEffect, createMemo, type Component } from 'solid-js'
 import { css, cx } from '@emotion/css'
-import { SampleT } from '@signumcode/chart/dist/chart';
-import { BASE_URL } from '../constants';
+import { SampleT } from '@signumcode/chart/dist/chart'
+import { BASE_URL } from '../constants'
 
 const flaggedUsers = [] as string[]
 
 function isElementInViewport(el: HTMLElement | Element) {
-  const rect = el.getBoundingClientRect();
+  const rect = el.getBoundingClientRect()
   return (
     rect.top >= 0 &&
     rect.left >= 0 &&
     rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
     rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  );
+  )
 }
 
 
@@ -84,8 +84,8 @@ const DataRows: Component<{
                 display: flex;
                 align-items: center;
                 ${flaggedUsers.includes(studentName)
-                    ? 'filter: blur(5px);'
-                    : ''}`,
+              ? 'filter: blur(5px);'
+              : ''}`,
               ].join(' ')}
             >
               <label

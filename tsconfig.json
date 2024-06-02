@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "target": "ES2020",
+    "target": "ES2022",
     "jsx": "preserve", // or "react-jsx" depending on Solid.js version
     "jsxImportSource": "solid-js",
     "allowImportingTsExtensions": true,

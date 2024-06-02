@@ -3,6 +3,10 @@ import globals from "globals";
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 
+import solidPlugin from "eslint-plugin-solid";
+import importPlugin from "eslint-plugin-import";
+import * as emotionPlugin from "@emotion/eslint-plugin";
+
 export default [
   { languageOptions: { globals: globals.browser } },
   {
@@ -14,6 +18,9 @@ export default [
     },
     plugins: {
       "@typescript-eslint": tseslint,
+      solid: solidPlugin,
+      import: importPlugin,
+      emotion: emotionPlugin
     },
     rules: {
       "@typescript-eslint/no-unused-vars": [

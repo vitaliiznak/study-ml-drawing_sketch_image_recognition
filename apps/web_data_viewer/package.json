@@ -11,6 +11,10 @@
   "license": "MIT",
   "devDependencies": {
     "@types/google.visualization": "^0.0.74",
+    "eslint": "^9.3.0",
+    "eslint-plugin-emotion": "^11.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-solid": "^0.14.0",
     "solid-devtools": "^0.29.2",
     "typescript": "^5.3.3",
     "vite": "^5.0.11",
