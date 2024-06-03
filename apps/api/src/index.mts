@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import { fileURLToPath } from 'url'
 import { DATASET_DIR, IMG_DIR, JS_OBJESCTS_DIR } from './constants.mjs'
+import { inUse } from './feature_extractor.mts'
 
 // Current file path using `import.meta.url`
 const __filename = fileURLToPath(import.meta.url)
@@ -25,6 +26,11 @@ app.use(
   '/img',
   express.static(IMG_DIR)
 )
+
+
+app.get('/features-in-use', (req, res) => {
+  res.json(inUse)
+})
 
 
 const PORT = process.env.PORT || 3080

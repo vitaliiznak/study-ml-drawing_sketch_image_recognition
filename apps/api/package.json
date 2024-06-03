@@ -3,10 +3,10 @@
   "type": "module",
   "scripts": {
     "start": "node dist/index.mjs",
-    "dev": "node --trace-warnings --loader ts-node/esm src/index.mts",
+    "dev": "tsx --trace-warnings  src/index.mts",
     "build": "tsc",
-    "dataset-generator": "node --trace-warnings --loader ts-node/esm src/dataset_generator.mts",
-    "feature-extractor": "node --trace-warnings --loader ts-node/esm src/feature_extractor.mts",
+    "dataset-generator": "tsx src/dataset_generator.mts",
+    "feature-extractor": "tsx src/feature_extractor.mts",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -20,6 +20,7 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.12.11",
     "ts-node": "^10.9.2",
+    "tsx": "^4.11.2",
     "typescript": "^5.4.5"
   }
 }

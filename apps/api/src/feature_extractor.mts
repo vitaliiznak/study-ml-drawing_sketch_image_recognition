@@ -1,7 +1,15 @@
 import fs from 'fs'
-import { FEATURES, JSON_DIR, SAMPLES } from './constants.mjs'
+import { FEATURES, JSON_DIR, MIN_MAX, SAMPLES } from './constants.mjs'
+import * as mathUtils from './mathUtils.mts'
 
-const samples = JSON.parse(fs.readFileSync(SAMPLES, 'utf8'))
+
+export type SampleT = {
+  id: number
+  label: string
+  point: number[]
+}
+
+const samples = JSON.parse(fs.readFileSync(SAMPLES, 'utf8')) as SampleT[]
 
 const getPathCount = (paths: [number, number][][]) => {
   return paths.length
@@ -27,7 +35,7 @@ const getWidths = (paths: [number, number][][]) => {
   const max = Math.max(...widths)
   return max - min
 }
-const inUse = [
+export const inUse = [
   // {
   //   name: 'Path Count',
   //   function: getPathCount
@@ -55,6 +63,8 @@ for (const sample of samples) {
   sample.point = functions.map((func) => func(paths))
 }
 
+const { min, max } = mathUtils.normalizePoints(samples.map((sample) => sample.point))
+
 const featuresNames = inUse.map((feature) => feature.name)
 
 fs.writeFileSync(
@@ -62,6 +72,7 @@ fs.writeFileSync(
   JSON.stringify(
     {
       featuresNames,
+      samplesMinMax: { min, max },
       samples
       /* : samples.map((sample) => {
         return {

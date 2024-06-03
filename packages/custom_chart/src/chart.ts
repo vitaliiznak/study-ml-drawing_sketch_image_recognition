@@ -19,7 +19,7 @@ export type OptionsT = {
 export type SampleT = {
   id: number
   label: string
-  point: [number, number]
+  point: number[]
 }
 
 type BoundsT = {
@@ -53,6 +53,7 @@ export default class Chart {
   }
 
   dynamicSample: SampleT | undefined
+  nearestSample: SampleT | undefined
 
   hoveredSample: SampleT | undefined
   selectedSample: SampleT | undefined
@@ -103,8 +104,9 @@ export default class Chart {
     this.#draw()
   }
 
-  showDynamicSample(sample: SampleT) {
+  showDynamicSample(sample: SampleT, nearestSample: SampleT | undefined) {
     this.dynamicSample = sample
+    this.nearestSample = nearestSample
     this.#draw()
   }
 
@@ -228,7 +230,19 @@ export default class Chart {
     const xMax = Math.max(...x)
     const yMin = Math.min(...y)
     const yMax = Math.max(...y)
-    return { xMin, xMax, yMin, yMax }
+    const deltaX = xMax - xMin
+    const deltaY = yMax - yMin
+    const maxDelta = Math.max(deltaX, deltaY)
+    console.log({
+      deltaX,
+      deltaY
+    })
+    return {
+      xMin: xMin,
+      xMax: xMin + maxDelta,
+      yMin,
+      yMax: yMin + maxDelta
+    }
   }
 
   #draw() {
@@ -245,11 +259,19 @@ export default class Chart {
         color: 'rgba(21, 21, 21, 0.7)'
       })
 
-      graphics.drawText(ctx, pixelLoc, {
-        text: this.dynamicSample.label,
-        size: 40,
-        color: 'white'
-      })
+
+      ctx.beginPath()
+      ctx.moveTo(...pixelLoc)
+      const nearestPixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, this.nearestSample!.point)
+      ctx.lineTo(...nearestPixelLoc)
+      ctx.strokeStyle = 'rgba(21, 21, 21, 0.7)'
+      ctx.lineWidth = 3
+      ctx.stroke()
+
+      graphics.drawImage(
+        ctx,
+        this.options.styles[this.dynamicSample.label].image!, pixelLoc
+      )
     }
 
     ctx.clearRect(0, 0, this.pixelBounds.xMin, this.canvas.height)

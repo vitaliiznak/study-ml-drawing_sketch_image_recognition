@@ -72,12 +72,12 @@ const inUse = [
 
 const inUseFunctions = inUse.map((feature) => feature.function)
 
-const classify = (point: [number, number], samples: SampleT[]) => {
+const classify = (point: [number, number], samples: SampleT[], minMax = undefined) => {
   const samplePoints = samples.map((s) => s.point) as [number, number][]
+  mathUtils.normalizePoints([point], minMax)
   const index = mathUtils.getNearestPointIndex(point, samplePoints)
-  return samples[index].label
+  return { predictedLabel: samples[index].label, nearestSample: samples[index] }
 }
-
 
 const App: Component = () => {
 
@@ -97,7 +97,8 @@ const App: Component = () => {
   const onDrawingsUpdate =  (paths: [number, number][][] ) => {
 
     const point = inUseFunctions.map((func) => func(paths)) as [number, number]
-    const predictedLabel = classify(point, features().samples)
+    const featuresMinMax = features().samplesMinMax
+    const {predictedLabel, nearestSample} = classify(point, features().samples, featuresMinMax)
     const label = predictedLabel
 
     const sample = {
@@ -105,7 +106,7 @@ const App: Component = () => {
       label: label || 'dynamic point',
       point
     }
-    chart.showDynamicSample(sample)
+    chart.showDynamicSample(sample, nearestSample)
    
     setPredictedLabel(predictedLabel)
   }
