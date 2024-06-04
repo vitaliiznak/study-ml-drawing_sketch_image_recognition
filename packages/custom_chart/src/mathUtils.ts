@@ -51,17 +51,11 @@ const getCenter = (bounds: BoundsT): [number, number] => {
   ]
 }
 
-const getNearestPointIndex = (point: [number, number], points: number[][]) => {
-  let minDist = Infinity
-  let minIndex = 0
-  points.forEach((p, i) => {
-    const dist = Math.hypot(p[0] - point[0], p[1] - point[1])
-    if (dist < minDist) {
-      minDist = dist
-      minIndex = i
-    }
-  })
-  return minIndex
+const getNearestPoints = (point: [number, number], points: number[][], k = 1) => {
+  let nearestPoints = points.map((p, i) => {
+    return { distance: Math.hypot(p[0] - point[0], p[1] - point[1]), index: i }
+  }).sort((a, b) => a.distance - b.distance)
+  return nearestPoints.slice(0, k).map((p) => p.index)
 }
 
 const equalPoints = (a: [number, number], b: [number, number]) => {
@@ -100,7 +94,7 @@ export default {
   remap, remapPoint,
   add, subtract,
   getCenter,
-  getNearestPointIndex,
+  getNearestPoints,
   equalPoints,
   normalizePoints
 }

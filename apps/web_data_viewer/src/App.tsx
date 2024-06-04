@@ -75,8 +75,15 @@ const inUseFunctions = inUse.map((feature) => feature.function)
 const classify = (point: [number, number], samples: SampleT[], minMax = undefined) => {
   const samplePoints = samples.map((s) => s.point) as [number, number][]
   mathUtils.normalizePoints([point], minMax)
-  const index = mathUtils.getNearestPointIndex(point, samplePoints)
-  return { predictedLabel: samples[index].label, nearestSample: samples[index] }
+  const indeces = mathUtils.getNearestPoints(point, samplePoints, 8)
+  const nearestSamples = indeces.map((index) => samples[index])
+  const labels = nearestSamples.map((sample) => sample.label)
+  const labelCounts = labels.reduce((acc, label) => {
+    acc[label] = (acc[label] || 0) + 1
+    return acc
+  } , {} as Record<string, number>)
+  const maxLabel = Object.keys(labelCounts).reduce((a, b) => labelCounts[a] > labelCounts[b] ? a : b)
+  return { predictedLabel: maxLabel, nearestSamples }
 }
 
 const App: Component = () => {
@@ -98,7 +105,7 @@ const App: Component = () => {
 
     const point = inUseFunctions.map((func) => func(paths)) as [number, number]
     const featuresMinMax = features().samplesMinMax
-    const {predictedLabel, nearestSample} = classify(point, features().samples, featuresMinMax)
+    const {predictedLabel, nearestSamples} = classify(point, features().samplesTraining, featuresMinMax)
     const label = predictedLabel
 
     const sample = {
@@ -106,7 +113,7 @@ const App: Component = () => {
       label: label || 'dynamic point',
       point
     }
-    chart.showDynamicSample(sample, nearestSample)
+    chart.showDynamicSample(sample, nearestSamples)
    
     setPredictedLabel(predictedLabel)
   }
@@ -148,7 +155,7 @@ const App: Component = () => {
     graphics.generateImagesAndAddToStyles(options.styles)
   
     setTimeout(() => {
-      chart = new Chart(chartCanvas!, features().samples, options)
+      chart = new Chart(chartCanvas!, features().samplesTraining, options)
 
       sketchpad = new SketchPad(sketchpadCanvasRef, {
         onUpdate: onDrawingsUpdate

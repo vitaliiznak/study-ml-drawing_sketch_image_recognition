@@ -5,10 +5,10 @@ const invLerp = (a: number, b: number, v: number) => {
   return (v - a) / (b - a)
 }
 
-const normalizePoints = (points: number[][], minMax: {
+const normalizePoints = (points: number[][], minMax?: {
   min: number[],
   max: number[]
-} | undefined
+}
 ) => {
   let min = Array(points[0].length).fill(Infinity)
   let max = Array(points[0].length).fill(-Infinity)

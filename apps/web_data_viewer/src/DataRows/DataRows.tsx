@@ -43,7 +43,7 @@ const DataRows: Component<{
     // Example transformation: combining user data with product data
     return {
       samplesGroupedByStudentId: Object.groupBy(
-        features().samples as any,
+        features().samplesTraining as any,
         (type) => (type as any).studentId
       ),
       featureNames: features().featureNames as any[]

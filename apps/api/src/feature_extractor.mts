@@ -56,6 +56,8 @@ export const inUse = [
 
 
 const functions = inUse.map((feature) => feature.function)
+
+
 for (const sample of samples) {
   const paths = JSON.parse(
     fs.readFileSync(`${JSON_DIR}/${sample.id}.json`, 'utf8')
@@ -64,8 +66,20 @@ for (const sample of samples) {
 }
 
 const { min, max } = mathUtils.normalizePoints(samples.map((sample) => sample.point))
-
 const featuresNames = inUse.map((feature) => feature.name)
+
+const trainingAmount = samples.length * 0.5
+const training = [];
+const testing = [];
+for (let i = 0; i < samples.length; i++) {
+  if (i < trainingAmount) {
+    training.push(samples[i])
+  } else {
+    testing.push(samples[i])
+  }
+}
+
+
 
 fs.writeFileSync(
   FEATURES,
@@ -73,7 +87,8 @@ fs.writeFileSync(
     {
       featuresNames,
       samplesMinMax: { min, max },
-      samples
+      samplesTraining: training,
+      samplesTesting: testing
       /* : samples.map((sample) => {
         return {
           label: sample.label,

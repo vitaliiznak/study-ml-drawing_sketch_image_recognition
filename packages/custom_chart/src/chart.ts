@@ -53,7 +53,7 @@ export default class Chart {
   }
 
   dynamicSample: SampleT | undefined
-  nearestSample: SampleT | undefined
+  nearestSamples: SampleT[] = []
 
   hoveredSample: SampleT | undefined
   selectedSample: SampleT | undefined
@@ -104,9 +104,9 @@ export default class Chart {
     this.#draw()
   }
 
-  showDynamicSample(sample: SampleT, nearestSample: SampleT | undefined) {
+  showDynamicSample(sample: SampleT, nearestSamples: SampleT[] = []) {
     this.dynamicSample = sample
-    this.nearestSample = nearestSample
+    this.nearestSamples = nearestSamples
     this.#draw()
   }
 
@@ -133,9 +133,9 @@ export default class Chart {
         this.#updateDataBounds(newOffset)
       }
       const samplesPointsPixelBoulds = this.samples.map(s => mathUtils.remapPoint(this.dataBounds, this.pixelBounds, s.point))
-      const nearestIndex = mathUtils.getNearestPointIndex([pixelLoc[0], pixelLoc[1] - 8], samplesPointsPixelBoulds)
-      this.hoveredSample = this.samples[nearestIndex]
-      const nearestPointPixelBounds = samplesPointsPixelBoulds[nearestIndex]
+      const nearestIndeces = mathUtils.getNearestPoints([pixelLoc[0], pixelLoc[1] - 8], samplesPointsPixelBoulds)
+      this.hoveredSample = this.samples[nearestIndeces[0]]
+      const nearestPointPixelBounds = samplesPointsPixelBoulds[nearestIndeces[0]]
       const distanceBetweenMouseAndNearest = Math.hypot(
         pixelLoc[0] - nearestPointPixelBounds[0],
         pixelLoc[1] - nearestPointPixelBounds[1]
@@ -260,19 +260,25 @@ export default class Chart {
       })
 
 
-      ctx.beginPath()
-      ctx.moveTo(...pixelLoc)
-      const nearestPixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, this.nearestSample!.point)
-      ctx.lineTo(...nearestPixelLoc)
-      ctx.strokeStyle = 'rgba(21, 21, 21, 0.7)'
-      ctx.lineWidth = 3
-      ctx.stroke()
+      console.log(' this.nearestSamples', this.nearestSamples)
 
+      this.nearestSamples.forEach((nearestSample) => {
+        const nearestPixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, nearestSample.point)
+
+        ctx.beginPath()
+        ctx.moveTo(...pixelLoc)
+
+        ctx.lineTo(...nearestPixelLoc)
+        ctx.strokeStyle = 'rgba(21, 21, 21, 0.7)'
+        ctx.lineWidth = 3
+        ctx.stroke()
+      })
       graphics.drawImage(
         ctx,
         this.options.styles[this.dynamicSample.label].image!, pixelLoc
       )
     }
+
 
     ctx.clearRect(0, 0, this.pixelBounds.xMin, this.canvas.height)
 
