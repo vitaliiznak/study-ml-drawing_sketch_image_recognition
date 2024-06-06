@@ -1,5 +1,6 @@
 data/dataset/img/
 data/dataset/json/
+dist/
 # data/raw/
 
 # But keep the .gitignore file

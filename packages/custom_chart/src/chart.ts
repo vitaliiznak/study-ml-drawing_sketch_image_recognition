@@ -17,6 +17,7 @@ export type OptionsT = {
 }
 
 export type SampleT = {
+  studentId?: string;
   id: number
   label: string
   point: number[]
@@ -258,9 +259,6 @@ export default class Chart {
         radius: 70,
         color: 'rgba(21, 21, 21, 0.7)'
       })
-
-
-      console.log(' this.nearestSamples', this.nearestSamples)
 
       this.nearestSamples.forEach((nearestSample) => {
         const nearestPixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, nearestSample.point)

@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { FEATURES, JSON_DIR, MIN_MAX, SAMPLES } from './constants.mjs'
+import { FEATURES, JSON_DIR, SAMPLES } from './constants.mjs'
 import * as mathUtils from './mathUtils.mts'
 
 
@@ -65,7 +65,7 @@ for (const sample of samples) {
   sample.point = functions.map((func) => func(paths))
 }
 
-const { min, max } = mathUtils.normalizePoints(samples.map((sample) => sample.point))
+
 const featuresNames = inUse.map((feature) => feature.name)
 
 const trainingAmount = samples.length * 0.5
@@ -79,6 +79,10 @@ for (let i = 0; i < samples.length; i++) {
   }
 }
 
+const { min, max } = mathUtils.normalizePoints(training.map((sample) => sample.point))
+
+mathUtils.normalizePoints(testing.map((sample) => sample.point), { min, max })
+
 
 
 fs.writeFileSync(
@@ -87,8 +91,8 @@ fs.writeFileSync(
     {
       featuresNames,
       samplesMinMax: { min, max },
-      samplesTraining: training,
-      samplesTesting: testing
+      trainingSamples: training,
+      testingSamples: testing
       /* : samples.map((sample) => {
         return {
           label: sample.label,

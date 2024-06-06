@@ -1,4 +1,4 @@
-import { createEffect, createResource, createSignal, onCleanup, onMount, type Component } from 'solid-js'
+import { createEffect, createMemo, createResource, createSignal, onCleanup, onMount, type Component } from 'solid-js'
 import { css } from '@emotion/css'
 
 import Chart, { graphics, mathUtils } from '@signumcode/chart'
@@ -10,6 +10,17 @@ import SketchPad from './Sketchpad/sketchpad'
 const SKETCPAD_WIDTH = 400
 const SKETCPAD_HEIGHT = 400
 
+export type FeaturesT =  {
+  trainingSamples: Array<SampleT>
+  testingSamples: Array<SampleT & {trueLabel: string, isCorrect?: boolean}>
+  featuresNames: string[]
+  samplesMinMax: {
+    min: number[],
+    max: number[]
+  }
+}
+
+
 const fetchFeatures = async () => {
   const response = await fetch(
     `${BASE_URL}/dataset/features.json`
@@ -18,7 +29,16 @@ const fetchFeatures = async () => {
     throw new Error('Failed to fetch samples')
   }
   const features = await response.json()
-  return features
+
+  features.testingSamples = features.testingSamples.map((sample: any) => {
+    const sampleTesting = {
+      ...sample,
+      trueLabel: sample.label,
+      label: '?'
+    }
+    return sampleTesting
+  })
+  return features as FeaturesT
 }
 
 type ChartConstructorParams = ConstructorParameters<typeof Chart>;
@@ -67,15 +87,18 @@ const inUse = [
   }
 ]
 
-
-
-
 const inUseFunctions = inUse.map((feature) => feature.function)
 
-const classify = (point: [number, number], samples: SampleT[], minMax = undefined) => {
+const classify = (point: number[], samples: SampleT[], minMax?: {
+  min: number[],
+  max: number[]
+}) => {
   const samplePoints = samples.map((s) => s.point) as [number, number][]
-  mathUtils.normalizePoints([point], minMax)
-  const indeces = mathUtils.getNearestPoints(point, samplePoints, 8)
+  const normalizedPoint = structuredClone(point)
+  if(minMax){
+    mathUtils.normalizePoints([normalizedPoint], minMax)
+  }
+  const indeces = mathUtils.getNearestPoints(normalizedPoint, samplePoints, 8)
   const nearestSamples = indeces.map((index) => samples[index])
   const labels = nearestSamples.map((sample) => sample.label)
   const labelCounts = labels.reduce((acc, label) => {
@@ -94,18 +117,34 @@ const App: Component = () => {
   let sketchpad: SketchPad
 
   const [predictedLabel, setPredictedLabel] = createSignal('')
-  const [isSketchpadVisible, setIsScketchpadVisible] = createSignal(true)
+  const [isSketchpadVisible, setIsScketchpadVisible] = createSignal(false)
   const [emphasizedRowId, setEmphasizedRowId] = createSignal<number | null>(null)
 
   const [features, { refetch: refetchFeatres }] = createResource(
     fetchFeatures
   )
 
-  const onDrawingsUpdate =  (paths: [number, number][][] ) => {
+  const trainingSamples = createMemo(() => {
+    return features()?.trainingSamples || []
+  })
+ 
+  const testingSamples = createMemo(() => {
+    const featuresData = features()
+    if (!featuresData) return []
+    
+    return featuresData.testingSamples.map((sample) => {
+      const { predictedLabel, nearestSamples } = classify(sample.point, featuresData.trainingSamples)
+      sample.isCorrect = sample.trueLabel === predictedLabel
+  
+      return sample
+    })
+  })
 
+  const onDrawingsUpdate =  (paths: [number, number][][] ) => {
     const point = inUseFunctions.map((func) => func(paths)) as [number, number]
-    const featuresMinMax = features().samplesMinMax
-    const {predictedLabel, nearestSamples} = classify(point, features().samplesTraining, featuresMinMax)
+    const featuresMinMax = features()?.samplesMinMax
+    const trainingSamles = features()!.trainingSamples
+    const {predictedLabel, nearestSamples} = classify(point, trainingSamles, featuresMinMax)
     const label = predictedLabel
 
     const sample = {
@@ -118,8 +157,6 @@ const App: Component = () => {
     setPredictedLabel(predictedLabel)
   }
 
-
-
   onCleanup(() => {
     // google.visualization.events.removeAllListeners(window)
   })
@@ -129,7 +166,7 @@ const App: Component = () => {
       return null // or some loading state/data
     }
     const options: ChartConstructorParams[2] = {
-      axesLabels: features().featuresNames,
+      axesLabels: features()!.featuresNames,
       styles: {
         car: { color: 'gray', text: '🚗', size: 28 },
         fish: { color: 'red', text: '🐟', size: 28 },
@@ -141,7 +178,7 @@ const App: Component = () => {
 
         pencil: { color: 'magenta', text: '🖌️' , size: 28},
         clock: { color: 'lightgray', text: '🕒' , size: 28},
-
+        ['?']: { color: 'red', text: '❓' , size: 28},
       },
       icon: 'image',
       onClick: (_e, sample) => {
@@ -155,8 +192,7 @@ const App: Component = () => {
     graphics.generateImagesAndAddToStyles(options.styles)
   
     setTimeout(() => {
-      chart = new Chart(chartCanvas!, features().samplesTraining, options)
-
+      chart = new Chart(chartCanvas!, [...features()!.trainingSamples], options)
       sketchpad = new SketchPad(sketchpadCanvasRef, {
         onUpdate: onDrawingsUpdate
       })
@@ -172,9 +208,12 @@ const App: Component = () => {
     }
   })
 
-  const onDataRowsSampleClick = (sample: SampleT) => {
-    if (chart) {
-      setEmphasizedRowId(sample.id)
+  const onDataRowsSampleClick = (sample: Pick<SampleT,'id'|'label' | 'point' >) => {
+    setEmphasizedRowId(sample.id)
+    if(sample.label === '?'){
+      chart.showDynamicSample(sample, [])
+    }else if (chart) {
+      chart.hideDynamicSample()
       chart.setActiveSampleById(sample.id)
     }
   }
@@ -206,13 +245,20 @@ const App: Component = () => {
           `}
         >
          
-          <DataRows features={features} emphasizedRowId={emphasizedRowId} onSample={onDataRowsSampleClick} />
+          <DataRows 
+            testingSamples={testingSamples}
+            trainingSamples={trainingSamples}
+            featuresNames={features()?.featuresNames || []}
+            emphasizedRowId={emphasizedRowId} 
+            onSample={onDataRowsSampleClick} 
+            
+          />
         </div>
 
   
         <div
           class={css`
-            height: 100%;
+            height: fit-content;
             min-width: 800px;
             width: fit-content;
             position:fixed; 

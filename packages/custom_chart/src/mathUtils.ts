@@ -51,7 +51,7 @@ const getCenter = (bounds: BoundsT): [number, number] => {
   ]
 }
 
-const getNearestPoints = (point: [number, number], points: number[][], k = 1) => {
+const getNearestPoints = (point: number[], points: number[][], k = 1) => {
   let nearestPoints = points.map((p, i) => {
     return { distance: Math.hypot(p[0] - point[0], p[1] - point[1]), index: i }
   }).sort((a, b) => a.distance - b.distance)
