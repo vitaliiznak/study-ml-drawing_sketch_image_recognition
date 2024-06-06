@@ -30,14 +30,14 @@ const drawPaths = (
 export default class SketchPad {
   canvas!: HTMLCanvasElement
   ctx!: CanvasRenderingContext2D
-  isDrawing: boolean = false
+  isDrawing = false
   paths: Point[][] = []
   onUpdate?: (paths: Point[][]) => void
 
   constructor(canvas: HTMLCanvasElement, {
     onUpdate
   }: {
-    onUpdate?: (paths: Point[][]) => void
+    onUpdate?: (paths: Point[][]) => void;
   } = {
   }) {
     this.canvas = canvas

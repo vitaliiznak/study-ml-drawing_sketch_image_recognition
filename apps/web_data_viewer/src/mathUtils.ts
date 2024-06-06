@@ -3,8 +3,8 @@ const invLerp = (a: number, b: number, v: number) => {
 }
 
 const normalizePoints = (points: number[][], minMax: {
-  min: number[],
-  max: number[]
+  min: number[];
+  max: number[];
 } | undefined
 ) => {
   let min = Array(points[0].length).fill(Infinity)

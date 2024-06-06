@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createResource, createSignal, onCleanup, onMount, type Component } from 'solid-js'
+import { createEffect, createMemo, createResource, createSignal, onCleanup, type Component } from 'solid-js'
 import { css } from '@emotion/css'
 
 import Chart, { graphics, mathUtils } from '@signumcode/chart'
@@ -11,13 +11,13 @@ const SKETCPAD_WIDTH = 400
 const SKETCPAD_HEIGHT = 400
 
 export type FeaturesT =  {
-  trainingSamples: Array<SampleT>
-  testingSamples: Array<SampleT & {trueLabel: string, isCorrect?: boolean}>
-  featuresNames: string[]
+  trainingSamples: Array<SampleT>;
+  testingSamples: Array<SampleT & {trueLabel: string; isCorrect?: boolean;}>;
+  featuresNames: string[];
   samplesMinMax: {
-    min: number[],
-    max: number[]
-  }
+    min: number[];
+    max: number[];
+  };
 }
 
 
@@ -90,8 +90,8 @@ const inUse = [
 const inUseFunctions = inUse.map((feature) => feature.function)
 
 const classify = (point: number[], samples: SampleT[], minMax?: {
-  min: number[],
-  max: number[]
+  min: number[];
+  max: number[];
 }) => {
   const samplePoints = samples.map((s) => s.point) as [number, number][]
   const normalizedPoint = structuredClone(point)
@@ -133,9 +133,8 @@ const App: Component = () => {
     if (!featuresData) return []
     
     return featuresData.testingSamples.map((sample) => {
-      const { predictedLabel, nearestSamples } = classify(sample.point, featuresData.trainingSamples)
+      const { predictedLabel } = classify(sample.point, featuresData.trainingSamples)
       sample.isCorrect = sample.trueLabel === predictedLabel
-  
       return sample
     })
   })

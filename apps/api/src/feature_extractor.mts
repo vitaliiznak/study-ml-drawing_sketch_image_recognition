@@ -4,9 +4,10 @@ import * as mathUtils from './mathUtils.mts'
 
 
 export type SampleT = {
-  id: number
-  label: string
-  point: number[]
+  id: number;
+  label: string;
+  point: number[];
+  studentName: string;
 }
 
 const samples = JSON.parse(fs.readFileSync(SAMPLES, 'utf8')) as SampleT[]
@@ -69,8 +70,8 @@ for (const sample of samples) {
 const featuresNames = inUse.map((feature) => feature.name)
 
 const trainingAmount = samples.length * 0.5
-const training = [];
-const testing = [];
+const training = []
+const testing = []
 for (let i = 0; i < samples.length; i++) {
   if (i < trainingAmount) {
     training.push(samples[i])

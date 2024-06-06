@@ -3,6 +3,7 @@ import { Accessor, createEffect, createMemo, type Component } from 'solid-js'
 import { css, cx } from '@emotion/css'
 import { SampleT } from '@signumcode/chart/dist/chart'
 import { BASE_URL } from '../constants'
+import { s } from 'vite/dist/node/types.d-aGj9QkWt'
 
 const flaggedUsers = [] as string[]
 
@@ -17,7 +18,7 @@ function isElementInViewport(el: HTMLElement | Element) {
 }
 
 
-const emphasizeRowStyle = cx(css`
+const emphasizeSampleStyle = cx(css`
   background-color: orange  !important;;
    & img, & div {
     background-color: orange !important;
@@ -26,11 +27,11 @@ const emphasizeRowStyle = cx(css`
 `, 'emphasized-row')
 
 const DataRows: Component<{
-  featuresNames: string[]
-  testingSamples: Accessor<(SampleT & { trueLabel: string; isCorrect?: boolean | undefined; })[]>
-  trainingSamples: Accessor<Array<SampleT>>
-  emphasizedRowId: Accessor<number | null>
-  onSample: (sample: SampleT) => void
+  featuresNames: string[];
+  testingSamples: Accessor<(SampleT & { trueLabel: string; isCorrect?: boolean; })[]>;
+  trainingSamples: Accessor<Array<SampleT>>;
+  emphasizedRowId: Accessor<number | null>;
+  onSample: (sample: SampleT) => void;
 }> = (props) => {
   let dataRowsContainerRef: HTMLElement | null = null
   const { testingSamples, trainingSamples, featuresNames } = props
@@ -73,44 +74,42 @@ const DataRows: Component<{
 
 
   const onSample = (sample: {
-    id: number
-    label: string
-    studentName :string
-    studentId?: string,
-    point: number[]
+    id: number;
+    label: string;
+    studentName :string;
+    studentId?: string;
+    point: number[];
   }) => {
     props.onSample(sample)
   }
 
 
   const dataRowRenderer = (entry: [string, unknown]) => {
-    const [ studentId, studentSamples] = entry as  [string, Array<{
-      id: number
-      label: string
-      studentName :string
-      studentId?: string,
-      point: number[]
-    }>]
+    const [ studentId, studentSamples] = entry as [string, Partial<Record<string, (SampleT & {
+      trueLabel: string;
+      isCorrect?: boolean | undefined;
+    })[]>>]
+    if(studentSamples.length === 0) return null
     const studentName = (studentSamples[0]).studentName
     return (
       <div
         class={[
           css`
-        display: flex;
-        align-items: center;
-        ${flaggedUsers.includes(studentName)
+          display: flex;
+          align-items: center;
+          ${flaggedUsers.includes(studentName)
         ? 'filter: blur(5px);'
         : ''}`,
         ].join(' ')}
       >
         <label
           class={css`
-      padding-left: 10px;
-      font-size: 28;
-      font-weight: 700;
-      width: 100px;
-      overflow: hidden;
-    `}
+            padding-left: 10px;
+            font-size: 28;
+            font-weight: 700;
+            width: 100px;
+            overflow: hidden;
+          `}
         >
           {studentName}
         </label>
@@ -122,12 +121,14 @@ const DataRows: Component<{
                 background-color: whitesmoke;
                 margin: 4px;
               `,
-              
-          
-                ,
-                props.emphasizedRowId() === sample.id
-                  ? emphasizeRowStyle
-                  : ''
+              props.sample.isCorrect === sample.id
+                ? isCorrectSampleStyle
+                : ''
+
+              ,
+              props.emphasizedRowId() === sample.id
+                ? emphasizeSampleStyle
+                : ''
               ].join(' ')
               }
 

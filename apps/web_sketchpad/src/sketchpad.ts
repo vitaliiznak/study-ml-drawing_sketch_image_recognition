@@ -30,7 +30,7 @@ const drawPaths = (
 export default class SketchPad {
   canvas!: HTMLCanvasElement
   ctx!: CanvasRenderingContext2D
-  isDrawing: boolean = false
+  isDrawing = false
   paths: Point[][] = []
 
   constructor(canvas: HTMLCanvasElement) {

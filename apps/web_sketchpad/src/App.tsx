@@ -14,7 +14,7 @@ const labels = [
   'clock',
 ]
 
-const NameView = ({ onDone }: { onDone: (name: string) => any }) => {
+const NameView = ({ onDone }: { onDone: (name: string) => any; }) => {
   let inputRef: HTMLInputElement
   const onNameInputSave = () => {
     const name = inputRef.value
@@ -48,7 +48,7 @@ const App: Component = () => {
   const data = {
     student: '',
     session: crypto.randomUUID(),
-    drawings: {} as { [key: string]: [number, number][][] },
+    drawings: {} as { [key: string]: [number, number][][]; },
   }
 
   onMount(() => {

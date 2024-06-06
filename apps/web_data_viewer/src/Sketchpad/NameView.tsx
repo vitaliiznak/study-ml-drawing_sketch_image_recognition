@@ -1,4 +1,4 @@
-const NameView = ({ onDone }: { onDone: (name: string) => any }) => {
+const NameView = ({ onDone }: { onDone: (name: string) => any; }) => {
   let inputRef: HTMLInputElement
   const onNameInputSave = () => {
     const name = inputRef.value
