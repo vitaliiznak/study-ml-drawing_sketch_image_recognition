@@ -2,10 +2,14 @@ const invLerp = (a: number, b: number, v: number) => {
   return (v - a) / (b - a)
 }
 
-const normalizePoints = (points: number[][], minMax: {
-  min: number[];
-  max: number[];
-} | undefined
+const normalizePoints = (
+  points: number[][],
+  minMax:
+    | {
+        min: number[]
+        max: number[]
+      }
+    | undefined,
 ) => {
   let min = Array(points[0].length).fill(Infinity)
   let max = Array(points[0].length).fill(-Infinity)
@@ -20,7 +24,7 @@ const normalizePoints = (points: number[][], minMax: {
       }
     }
   }
-  points.map((point) => {
+  points.map(point => {
     return point.map((value, index) => {
       point[index] = invLerp(min[index], max[index], value)
     })
@@ -28,8 +32,4 @@ const normalizePoints = (points: number[][], minMax: {
   return { min, max }
 }
 
-
-export {
-  invLerp,
-  normalizePoints
-}
+export { invLerp, normalizePoints }

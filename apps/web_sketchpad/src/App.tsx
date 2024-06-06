@@ -14,7 +14,7 @@ const labels = [
   'clock',
 ]
 
-const NameView = ({ onDone }: { onDone: (name: string) => any; }) => {
+const NameView = ({ onDone }: { onDone: (name: string) => any }) => {
   let inputRef: HTMLInputElement
   const onNameInputSave = () => {
     const name = inputRef.value
@@ -28,8 +28,8 @@ const NameView = ({ onDone }: { onDone: (name: string) => any; }) => {
     <div>
       <h4>Please Input your name first!</h4>
       <input
-        title='Name Input'
-        ref={(el) => {
+        title="Name Input"
+        ref={el => {
           inputRef = el
         }}
         type="text"
@@ -48,7 +48,7 @@ const App: Component = () => {
   const data = {
     student: '',
     session: crypto.randomUUID(),
-    drawings: {} as { [key: string]: [number, number][][]; },
+    drawings: {} as { [key: string]: [number, number][][] },
   }
 
   onMount(() => {
@@ -73,7 +73,10 @@ const App: Component = () => {
   const onSave = () => {
     const element = document.createElement('a')
     const stringifiedData = JSON.stringify(data, null, 2)
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(stringifiedData))
+    element.setAttribute(
+      'href',
+      'data:text/plain;charset=utf-8,' + encodeURIComponent(stringifiedData),
+    )
     element.setAttribute('download', `${name()}_${data.session}.json`)
     element.style.display = 'none'
     document.body.appendChild(element)
@@ -110,13 +113,13 @@ const App: Component = () => {
               </span>
               <button onClick={onNext}>Next</button>
             </h4>
-          ) :
+          ) : (
             <div>
               <h4>Thank you for your contribution!</h4>
               <pre>{JSON.stringify(data, null, 2)}</pre>
               <button onClick={onSave}>Save</button>
             </div>
-          }
+          )}
         </div>
         <canvas
           class={css`
@@ -125,7 +128,7 @@ const App: Component = () => {
           `}
           width="400"
           height="400"
-          ref={(el) => (canvasRef = el)}
+          ref={el => (canvasRef = el)}
         />
       </div>
     </div>

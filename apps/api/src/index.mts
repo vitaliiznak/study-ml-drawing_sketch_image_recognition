@@ -12,26 +12,15 @@ const __filename = fileURLToPath(import.meta.url)
 const app = express()
 app.use(cors())
 
-app.use(
-  '/json_objects',
-  express.static(JS_OBJESCTS_DIR)
-)
+app.use('/json_objects', express.static(JS_OBJESCTS_DIR))
 
-app.use(
-  '/dataset',
-  express.static(DATASET_DIR)
-)
+app.use('/dataset', express.static(DATASET_DIR))
 
-app.use(
-  '/img',
-  express.static(IMG_DIR)
-)
-
+app.use('/img', express.static(IMG_DIR))
 
 app.get('/features-in-use', (req, res) => {
   res.json(inUse)
 })
-
 
 const PORT = process.env.PORT || 3080
 app.listen(PORT, () => {

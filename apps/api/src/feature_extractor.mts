@@ -2,12 +2,11 @@ import fs from 'fs'
 import { FEATURES, JSON_DIR, SAMPLES } from './constants.mjs'
 import * as mathUtils from './mathUtils.mts'
 
-
 export type SampleT = {
-  id: number;
-  label: string;
-  point: number[];
-  studentName: string;
+  id: number
+  label: string
+  point: number[]
+  studentName: string
 }
 
 const samples = JSON.parse(fs.readFileSync(SAMPLES, 'utf8')) as SampleT[]
@@ -23,7 +22,7 @@ const getPointCount = (paths: [number, number][][]) => {
 
 const getHeights = (paths: [number, number][][]) => {
   const points = paths.flat()
-  const heights = points.map((point) => point[1])
+  const heights = points.map(point => point[1])
   const min = Math.min(...heights)
   const max = Math.max(...heights)
   return max - min
@@ -31,7 +30,7 @@ const getHeights = (paths: [number, number][][]) => {
 
 const getWidths = (paths: [number, number][][]) => {
   const points = paths.flat()
-  const widths = points.map((point) => point[0])
+  const widths = points.map(point => point[0])
   const min = Math.min(...widths)
   const max = Math.max(...widths)
   return max - min
@@ -47,27 +46,24 @@ export const inUse = [
   // },
   {
     name: 'Widths',
-    function: getWidths
+    function: getWidths,
   },
   {
     name: 'Heights',
-    function: getHeights
-  }
+    function: getHeights,
+  },
 ]
 
-
-const functions = inUse.map((feature) => feature.function)
-
+const functions = inUse.map(feature => feature.function)
 
 for (const sample of samples) {
   const paths = JSON.parse(
-    fs.readFileSync(`${JSON_DIR}/${sample.id}.json`, 'utf8')
+    fs.readFileSync(`${JSON_DIR}/${sample.id}.json`, 'utf8'),
   )
-  sample.point = functions.map((func) => func(paths))
+  sample.point = functions.map(func => func(paths))
 }
 
-
-const featuresNames = inUse.map((feature) => feature.name)
+const featuresNames = inUse.map(feature => feature.name)
 
 const trainingAmount = samples.length * 0.5
 const training = []
@@ -80,11 +76,14 @@ for (let i = 0; i < samples.length; i++) {
   }
 }
 
-const { min, max } = mathUtils.normalizePoints(training.map((sample) => sample.point))
+const { min, max } = mathUtils.normalizePoints(
+  training.map(sample => sample.point),
+)
 
-mathUtils.normalizePoints(testing.map((sample) => sample.point), { min, max })
-
-
+mathUtils.normalizePoints(
+  testing.map(sample => sample.point),
+  { min, max },
+)
 
 fs.writeFileSync(
   FEATURES,
@@ -93,7 +92,7 @@ fs.writeFileSync(
       featuresNames,
       samplesMinMax: { min, max },
       trainingSamples: training,
-      testingSamples: testing
+      testingSamples: testing,
       /* : samples.map((sample) => {
         return {
           label: sample.label,
@@ -101,13 +100,11 @@ fs.writeFileSync(
         }
       }),
       */
-
     },
 
     null,
-    2
-  )
+    2,
+  ),
 )
-
 
 console.log('Feature extraction completed!')

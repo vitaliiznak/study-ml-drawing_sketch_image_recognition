@@ -1,4 +1,4 @@
-const NameView = ({ onDone }: { onDone: (name: string) => any; }) => {
+const NameView = ({ onDone }: { onDone: (name: string) => any }) => {
   let inputRef: HTMLInputElement
   const onNameInputSave = () => {
     const name = inputRef.value
@@ -12,8 +12,8 @@ const NameView = ({ onDone }: { onDone: (name: string) => any; }) => {
     <div>
       <h4>Please Input your name first!</h4>
       <input
-        title='Name Input'
-        ref={(el) => {
+        title="Name Input"
+        ref={el => {
           inputRef = el
         }}
         type="text"

@@ -3,7 +3,7 @@ import { CanvasRenderingContext2D } from 'canvas'
 export const drawPath = (
   ctx: CanvasRenderingContext2D,
   path: [number, number][],
-  color = 'black'
+  color = 'black',
 ) => {
   ctx.strokeStyle = color
   ctx.lineWidth = 3
@@ -17,7 +17,11 @@ export const drawPath = (
   ctx.stroke()
 }
 
-export const drawPaths = (ctx: CanvasRenderingContext2D, paths: [number, number][][], color = 'black') => {
+export const drawPaths = (
+  ctx: CanvasRenderingContext2D,
+  paths: [number, number][][],
+  color = 'black',
+) => {
   for (const path of paths) {
     drawPath(ctx, path, color)
   }

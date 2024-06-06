@@ -5,7 +5,6 @@ import { printProgress } from './utils.mjs'
 import { CanvasRenderingContext2D } from 'canvas'
 import { IMG_DIR, JSON_DIR, RAW_DATA_DIR, SAMPLES } from './constants.mjs'
 
-
 const canvas = createCanvas(400, 400)
 const ctx: CanvasRenderingContext2D = canvas.getContext('2d')
 
@@ -27,16 +26,13 @@ async function init() {
       const paths = drawings[label]
       fs.writeFileSync(`${JSON_DIR}/${i}.json`, JSON.stringify(paths, null, 2))
 
-      await generateImageFile(paths, `${IMG_DIR}/${i}.png`)
+      generateImageFile(paths, `${IMG_DIR}/${i}.png`)
       printProgress(i, fileNames.length * 8)
       i++
     }
   }
 
   fs.writeFileSync(SAMPLES, JSON.stringify(samples, null, 2))
-
-
-
 }
 
 async function generateImageFile(paths: [number, number][][], imgPath: string) {

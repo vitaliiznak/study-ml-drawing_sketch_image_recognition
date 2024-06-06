@@ -1,9 +1,9 @@
-type Point = [number, number];
+type Point = [number, number]
 
 const drawPath = (
   ctx: CanvasRenderingContext2D,
   path: Point[],
-  color = 'black'
+  color = 'black',
 ) => {
   ctx.strokeStyle = color
   ctx.lineWidth = 3
@@ -20,7 +20,7 @@ const drawPath = (
 const drawPaths = (
   ctx: CanvasRenderingContext2D,
   paths: Point[][],
-  color = 'black'
+  color = 'black',
 ) => {
   for (const path of paths) {
     drawPath(ctx, path, color)
@@ -72,7 +72,7 @@ export default class SketchPad {
       const loc = evt.touches[0]
       this.canvas.onmousemove!(new MouseEvent('mousemove', loc))
     }
-    document.ontouchend = (evt) => {
+    document.ontouchend = evt => {
       const loc = evt.touches[0]
       document.onmouseup!(new MouseEvent('mouseup', loc))
     }

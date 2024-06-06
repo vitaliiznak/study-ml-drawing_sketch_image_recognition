@@ -8,6 +8,11 @@ import importPlugin from "eslint-plugin-import";
 import * as emotionPlugin from "@emotion/eslint-plugin";
 
 
+
+import prettier from 'eslint-config-prettier'
+import prettierPlugin from 'eslint-plugin-prettier'
+
+
 export default [
   { languageOptions: { globals: globals.browser } },
   {
@@ -23,7 +28,8 @@ export default [
       "@typescript-eslint": tseslint,
       solid: solidPlugin,
       import: importPlugin,
-      emotion: emotionPlugin
+      emotion: emotionPlugin,
+      prettier: prettierPlugin
     },
     rules: {
       // ESLint Recommended Rules (Manually adding some common ones)
@@ -78,22 +84,33 @@ export default [
       // Custom Rules
       'indent': ['error', 2],  // Use 2 spaces for indentation
       "semi": ["error", "never"],  // Enforce no semicolons
-      '@typescript-eslint/member-delimiter-style': [
-        'error',
-        {
-          multiline: {
-            delimiter: 'semi',
-            requireLast: true
-          },
-          singleline: {
-            delimiter: 'semi',
-            requireLast: true
-          }
-        }
-      ],
+      '@typescript-eslint/member-delimiter-style': 'off'
+      // '@typescript-eslint/member-delimiter-style': [
+      //   'false',
+      //   {
+      //     multiline: {
+      //       delimiter: 'comma',
+      //       requireLast: true
+      //     },
+      //     singleline: {
+      //       delimiter: 'comma',
+      //       requireLast: true
+      //     }
+      //   }   ]
+      ,
       '@typescript-eslint/explicit-function-return-type': 'off', // Customize as needed
-      '@typescript-eslint/no-explicit-any': 'off'  // Customize as needed
-    }
+      '@typescript-eslint/no-explicit-any': 'off',  // Customize as needed
+
+      // Prettier Rules
+      'prettier/prettier': ['error', {
+        singleQuote: true,
+        semi: false,
+        trailingComma: 'all',
+        arrowParens: 'avoid',
+        endOfLine: 'auto',
+      }],
+    },
+
   },
   {
     files: ["**/*.{js,jsx,mjs,cjs}"],
@@ -101,10 +118,24 @@ export default [
       ecmaVersion: "latest",
       sourceType: "module",
     },
+    plugins: {
+      solid: solidPlugin,
+      import: importPlugin,
+      emotion: emotionPlugin,
+      prettier: prettierPlugin
+    },
     rules: {
       indent: ["error", 2], // Enforce 2 spaces
       quotes: ["error", "single"], // Use single quotes
       semi: ["error", "never"], // Enforce semicolons
+      // Prettier Rules
+      'prettier/prettier': ['error', {
+        singleQuote: true,
+        semi: false,
+        trailingComma: 'none',
+        arrowParens: 'avoid',
+        endOfLine: 'auto',
+      }],
     },
   },
   {
