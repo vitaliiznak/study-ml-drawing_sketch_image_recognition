@@ -387,7 +387,7 @@ export default class Chart {
   }
 
   #drawSample(sample: SampleT) {
-    const { ctx, defaultDataBounds, pixelBounds, options } = this
+    const { ctx, pixelBounds, options } = this
     const pixelLoc = mathUtils.remapPoint(this.dataBounds, pixelBounds, sample.point)
     const style = options.styles[sample.label] || {}
 

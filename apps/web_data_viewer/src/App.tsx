@@ -16,6 +16,7 @@ import SketchPad from './Sketchpad/sketchpad'
 
 const SKETCPAD_WIDTH = 400
 const SKETCPAD_HEIGHT = 400
+const k = 24
 
 export type FeaturesT = {
   trainingSamples: Array<SampleT>
@@ -106,7 +107,7 @@ const classify = (
   if (minMax) {
     mathUtils.normalizePoints([normalizedPoint], minMax)
   }
-  const indeces = mathUtils.getNearestPoints(normalizedPoint, samplePoints, 8)
+  const indeces = mathUtils.getNearestPoints(normalizedPoint, samplePoints, k)
   const nearestSamples = indeces.map(index => samples[index])
   const labels = nearestSamples.map(sample => sample.label)
   const labelCounts = labels.reduce(
@@ -164,7 +165,7 @@ const App: Component = () => {
       featuresMinMax,
     )
     const label = predictedLabel
-
+    mathUtils.normalizePoints([point], featuresMinMax)
     const sample = {
       id: -1,
       label: label || 'dynamic point',
