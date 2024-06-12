@@ -6,7 +6,9 @@ export type SampleT = {
   id: number
   label: string
   point: number[]
-  studentName: string
+  studentName: string,
+  trueLabel?: string;
+  isCorrect?: boolean;
 }
 
 const samples = JSON.parse(fs.readFileSync(SAMPLES, 'utf8')) as SampleT[]

@@ -256,7 +256,6 @@ const App: Component = () => {
       >
         <div
           class={css`
-            background-color: green;
             display: flex;
             flex-direction: column;
           `}
@@ -276,7 +275,7 @@ const App: Component = () => {
             min-width: 800px;
             width: fit-content;
             position: fixed;
-            top: 20px;
+            top: 90px;
             right: 0;
           `}
         >
@@ -334,13 +333,15 @@ const App: Component = () => {
           </div>
 
           <div>
+            testingSamplesMetadata
             <button
               onClick={() => {
                 setIsScketchpadVisible(!isSketchpadVisible())
               }}
               class={css`
-                position: relative;
-                top: 0px;
+                position: absolute;
+                top: -30px;
+                right: 0px;
                 background-color: orange;
                 color: whitesmoke;
                 font-size: 20px;

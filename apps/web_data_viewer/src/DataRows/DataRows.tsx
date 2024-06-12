@@ -1,10 +1,52 @@
-import { Accessor, createEffect, createMemo, type Component } from 'solid-js'
+import {
+  Accessor,
+  createEffect,
+  createMemo,
+  createSignal,
+  useTransition,
+  type Component,
+} from 'solid-js'
 import { css, cx } from '@emotion/css'
 import { SampleT } from '@signumcode/chart/dist/chart'
 import { BASE_URL } from '../constants'
-import { s } from 'vite/dist/node/types.d-aGj9QkWt'
 
 const flaggedUsers = [] as string[]
+
+const tabsStyles = css`
+  label: TrainingTestingTab;
+  padding: 25px;
+  font-family: sans-serif;
+  color: #222;
+  font-weight: bold;
+  font-size: 22px;
+
+  list-style: none;
+  padding: 0;
+  margin-bottom: 0;
+  -webkit-margin-before: 0;
+  -webkit-margin-after: 0;
+  -webkit-margin-start: 0px;
+  -webkit-margin-end: 0px;
+  -webkit-padding-start: 0px;
+
+  li {
+    display: inline-block;
+    margin-left: 0;
+    padding: 10px;
+    border-bottom: 2px solid #eee;
+    transition: all 0.1s;
+    font-family: sans-serif;
+    font-weight: 300;
+    cursor: pointer;
+    color: #111;
+  }
+
+  li.selected {
+    border-bottom: 4px solid #337ab7;
+    font-weight: bolder;
+    color: darkblue;
+  }
+`
 
 function isElementInViewport(el: HTMLElement | Element) {
   const rect = el.getBoundingClientRect()
@@ -30,7 +72,7 @@ const emphasizeSampleStyle = cx(
 
 const isCorrectSampleStyle = css`
   label: isCorrectSampleStyle;
-  background-color: lightgreen;
+  background-color: lightgreen !important;
 `
 
 const DataRows: Component<{
@@ -43,7 +85,12 @@ const DataRows: Component<{
   onSample: (sample: SampleT) => void
 }> = props => {
   let dataRowsContainerRef: HTMLElement | null = null
+  let trainingDataStartRef: HTMLElement | null = null
+  let testingDataStartRef: HTMLElement | null = null
   const { testingSamples, trainingSamples, featuresNames } = props
+
+  const [tab, setTab] = createSignal<'TRAINING' | 'TESTING'>('TRAINING')
+  const [pending, start] = useTransition()
 
   const trainingFeaturesGroupedByStudentId = createMemo(() => {
     // Example transformation: combining user data with product data
@@ -79,6 +126,24 @@ const DataRows: Component<{
     }
   })
 
+  const testingSamplesMetadata = createMemo(() => {
+    const toReturn = {
+      totalCount: 0,
+      correctCount: 0,
+      accuracy: 0,
+    }
+
+    if (!testingSamples().length) return toReturn
+    for (const sample of testingSamples()) {
+      toReturn.totalCount++
+      if (sample.isCorrect) {
+        toReturn.correctCount++
+      }
+    }
+    toReturn.accuracy = toReturn.correctCount / toReturn.totalCount
+    return toReturn
+  })
+
   const onSample = (sample: {
     id: number
     label: string
@@ -92,11 +157,12 @@ const DataRows: Component<{
   const dataRowRenderer = (
     entry: [
       string,
-      Array<SampleT & { trueLabel: string; isCorrect?: boolean }> | undefined,
+      Array<SampleT & { trueLabel?: string; isCorrect?: boolean }> | undefined,
     ],
   ) => {
     const [studentId, studentSamples] = entry
     const studentName = studentSamples![0]!.studentName
+
     return (
       <div
         class={[
@@ -109,7 +175,6 @@ const DataRows: Component<{
       >
         <label
           class={css`
-            padding-left: 10px;
             font-size: 28;
             font-weight: 700;
             width: 100px;
@@ -119,7 +184,7 @@ const DataRows: Component<{
           {studentName}
         </label>
 
-        {studentSamples.map(sample => {
+        {studentSamples!.map(sample => {
           return (
             <div
               class={[
@@ -159,26 +224,97 @@ const DataRows: Component<{
     )
   }
 
+  const updateTab = (tabKey: 'TRAINING' | 'TESTING') => () => {
+    const offset = 80
+    if (tabKey === 'TRAINING') {
+      const elementPosition = trainingDataStartRef!.getBoundingClientRect().top
+      const offsetPosition = elementPosition - offset
+      window.scrollBy({ top: offsetPosition, behavior: 'smooth' })
+    }
+    if (tabKey === 'TESTING') {
+      const elementPosition = testingDataStartRef!.getBoundingClientRect().top
+      const offsetPosition = elementPosition - offset
+      window.scrollBy({ top: offsetPosition, behavior: 'smooth' })
+    }
+    start(() => setTab(tabKey))
+  }
   return (
-    <div
-      class={css`
-        display: flex;
-        height: 100%;
-      `}
-    >
+    <div>
       <div
-        ref={ref => {
-          dataRowsContainerRef = ref
-        }}
+        class={css`
+          position: fixed;
+          left: 20px;
+          top: 20px;
+          z-index: 1000;
+          background-color: rgb(135, 206, 235, 0.5);
+          display: flex;
+        `}
       >
-        {trainingFeaturesGroupedByStudentId().samplesGroupedByStudentId &&
-          Object.entries(
-            trainingFeaturesGroupedByStudentId().samplesGroupedByStudentId!,
-          ).map(dataRowRenderer)}
-        {testingFeaturesGroupedByStudentId().samplesGroupedByStudentId &&
-          Object.entries(
-            testingFeaturesGroupedByStudentId().samplesGroupedByStudentId!,
-          ).map(dataRowRenderer)}
+        <ul class={tabsStyles}>
+          <li
+            classList={{ selected: tab() === 'TRAINING' }}
+            onClick={updateTab('TRAINING')}
+          >
+            Training data
+          </li>
+          <li
+            classList={{ selected: tab() === 'TESTING' }}
+            onClick={updateTab('TESTING')}
+          >
+            Testing data
+          </li>
+        </ul>
+
+        <span
+          class={css`
+            padding-left: 20px;
+            padding-top: 10px;
+            font-size: 20px;
+          `}
+        >
+          | Accuracy: {testingSamplesMetadata().correctCount}/
+          {testingSamplesMetadata().totalCount} (
+          {Number(testingSamplesMetadata().accuracy * 100).toFixed(2)}%)
+        </span>
+      </div>
+
+      <div
+        class={css`
+          display: flex;
+          direction: row;
+          height: 100%;
+          padding-top: 70px;
+          padding-left: 10px;
+        `}
+      >
+        <div
+          ref={ref => {
+            dataRowsContainerRef = ref
+          }}
+        >
+          <h4
+            ref={ref => {
+              trainingDataStartRef = ref
+            }}
+          >
+            Training data
+          </h4>
+          {trainingFeaturesGroupedByStudentId().samplesGroupedByStudentId &&
+            Object.entries(
+              trainingFeaturesGroupedByStudentId().samplesGroupedByStudentId!,
+            ).map(dataRowRenderer)}
+          <h4
+            ref={ref => {
+              testingDataStartRef = ref
+            }}
+          >
+            Testing data
+          </h4>
+          {testingFeaturesGroupedByStudentId().samplesGroupedByStudentId &&
+            Object.entries(
+              testingFeaturesGroupedByStudentId().samplesGroupedByStudentId!,
+            ).map(dataRowRenderer)}
+        </div>
       </div>
     </div>
   )
