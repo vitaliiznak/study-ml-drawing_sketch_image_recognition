@@ -71,7 +71,7 @@ export default class Chart {
     this.samples = samples
     this.options = arguments[2]
     this.ctx = this.canvas.getContext('2d')!
-    this.transparency = 0.45
+    this.transparency = 0.58
     this.margin = 40
     this.pixelBounds = this.#getPixelBounds()
     this.dataBounds = this.#getDataBounds()

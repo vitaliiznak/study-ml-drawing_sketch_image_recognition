@@ -1,15 +1,8 @@
 import fs from 'fs'
 import { FEATURES, JSON_DIR, SAMPLES } from './constants.mjs'
 import * as mathUtils from './mathUtils.mts'
+import { SampleT } from './classifiers/knn.mts'
 
-export type SampleT = {
-  id: number
-  label: string
-  point: number[]
-  studentName: string,
-  trueLabel?: string;
-  isCorrect?: boolean;
-}
 
 const samples = JSON.parse(fs.readFileSync(SAMPLES, 'utf8')) as SampleT[]
 
