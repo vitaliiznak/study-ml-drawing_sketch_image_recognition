@@ -1,0 +1,16 @@
+{
+  "name": "@signumcode/ml-libs",
+  "version": "0.0.0",
+  "description": "",
+  "file": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {}
+}

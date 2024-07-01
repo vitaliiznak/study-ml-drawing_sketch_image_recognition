@@ -1,28 +1,39 @@
-import { createEffect, createSignal, on, onCleanup, onMount, type Component } from 'solid-js'
+import {
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+  type Component
+} from 'solid-js'
 import { css, cx } from '@emotion/css'
-import mathUtils from './mathUtils'
+import mathUtils from '@signumcode/ml-libs/dist/mathUtils'
 import Chart, { OptionsT, SampleT } from './chart'
 import graphics from './graphics'
 
-
 function isElementInViewport(el: HTMLElement | Element) {
-  const rect = el.getBoundingClientRect();
+  const rect = el.getBoundingClientRect()
   return (
     rect.top >= 0 &&
     rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.bottom <=
+      (window.innerHeight || document.documentElement.clientHeight) &&
     rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  );
+  )
 }
 
-const emphasizeRowStyle = cx(css`
-  background-color: yellow;
-`, 'emphasized-row')
+const emphasizeRowStyle = cx(
+  css`
+    background-color: yellow;
+  `,
+  'emphasized-row'
+)
 
 const App: Component = () => {
   let tBodyRef: HTMLTableSectionElement | null = null
   const [canvasFontLoaded, setCanvasFontLoaded] = createSignal(false)
-  const [emphasizedRowId, setEmphasizedRowId] = createSignal<number | null>(null)
+  const [emphasizedRowId, setEmphasizedRowId] = createSignal<number | null>(
+    null
+  )
 
   let chart: Chart | undefined
   let refCanvas: HTMLCanvasElement | null = null
@@ -30,15 +41,16 @@ const App: Component = () => {
   const samples: SampleT[] = Array.from({ length: N }, (_, i) => {
     const type = Math.random() > 0.5 ? 'sport' : 'basic'
     const km = mathUtils.lerp(3000, 300_000, Math.random())
-    const price = mathUtils.remap(3000, 300_000, 9_000, 900, km)
-      + mathUtils.lerp(-2000, 2000, Math.random())
-      + (type === 'basic' ? 0 : 5000)
+    const price =
+      mathUtils.remap(3000, 300_000, 9_000, 900, km) +
+      mathUtils.lerp(-2000, 2000, Math.random()) +
+      (type === 'basic' ? 0 : 5000)
 
-    return ({
+    return {
       id: i + 1,
       label: type,
       point: [km, price]
-    })
+    }
   })
 
   const options = {
@@ -49,12 +61,12 @@ const App: Component = () => {
       basic: {
         text: '🚗',
         color: 'blue',
-        size: 38,
+        size: 38
       },
       sport: {
         text: '🏎️',
         color: 'red',
-        size: 38,
+        size: 38
       }
     },
     onClick: (_e, sample) => {
@@ -67,7 +79,6 @@ const App: Component = () => {
   } as OptionsT
 
   createEffect(() => {
-
     if (emphasizedRowId() && tBodyRef) {
       const scrollTarget = tBodyRef.getElementsByClassName('emphasized-row')[0]
       if (isElementInViewport(scrollTarget)) return
@@ -117,10 +128,13 @@ const App: Component = () => {
     <div>
       <header>
         <h1>Custom Chart Demo</h1>
-        <div class={css`display: flex;`}>
-
-          <table class={
-            css`
+        <div
+          class={css`
+            display: flex;
+          `}
+        >
+          <table
+            class={css`
               border: 2px solid white;
               padding: 4px;
               text-align: center;
@@ -138,8 +152,8 @@ const App: Component = () => {
                 padding: 4px;
                 border: 1px solid white;
               }
-            `
-          }>
+            `}
+          >
             <thead>
               <tr>
                 <th>Id</th>
@@ -148,29 +162,30 @@ const App: Component = () => {
                 <th>Price</th>
               </tr>
             </thead>
-            <tbody ref={(ref) => {
-              tBodyRef = ref
-            }}>
+            <tbody
+              ref={ref => {
+                tBodyRef = ref
+              }}
+            >
               {samples.map(({ id, label, point }) => (
                 <tr
                   class={[
                     emphasizedRowId() === id ? emphasizeRowStyle : '',
                     css`
-                    cursor: pointer;
-                    &:hover {
-                      background-color: #444;
-                      color: white;
-                    }
-                  `
-                  ].join(' ')}
-                  onClick={
-                    () => {
-                      if (chart) {
-                        setEmphasizedRowId(id)
-                        chart.setActiveSampleById(id)
+                      cursor: pointer;
+                      &:hover {
+                        background-color: #444;
+                        color: white;
                       }
+                    `
+                  ].join(' ')}
+                  onClick={() => {
+                    if (chart) {
+                      setEmphasizedRowId(id)
+                      chart.setActiveSampleById(id)
                     }
-                  }>
+                  }}
+                >
                   <td>{id}</td>
                   <td>{label}</td>
                   <td>{point[0].toFixed(0)}</td>
@@ -179,26 +194,30 @@ const App: Component = () => {
               ))}
             </tbody>
           </table>
-          <div class={
-            css`
+          <div
+            class={css`
               position: fixed;
-              right:0;
+              right: 0;
               top: 40%;
               transform: translateY(-50%);
               padding-right: 10px;
-            `
-          }>
-            <canvas width="780" height="780" id="chartCanvas"
-              class={
-                css`
-                  background-color: #333;
-                `}
-              ref={(ref) => { refCanvas = ref }}
+            `}
+          >
+            <canvas
+              width="780"
+              height="780"
+              id="chartCanvas"
+              class={css`
+                background-color: #333;
+              `}
+              ref={ref => {
+                refCanvas = ref
+              }}
             ></canvas>
           </div>
         </div>
-      </header >
-    </div >
+      </header>
+    </div>
   )
 }
 

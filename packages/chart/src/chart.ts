@@ -1,9 +1,8 @@
 import graphics, { ColorT } from './graphics'
-import mathUtils from './mathUtils'
-
+import mathUtils from '@signumcode/ml-libs/dist/mathUtils'
 
 export type OptionsT = {
-  axesLabels: string[];
+  axesLabels: string[]
   icon?: string
   styles: {
     [key: string]: {
@@ -13,21 +12,22 @@ export type OptionsT = {
       image?: HTMLImageElement
     }
   }
+  background?: HTMLImageElement
   onClick?: (e: MouseEvent, point: SampleT | undefined) => void
 }
 
 export type SampleT = {
-  studentId?: string;
+  studentId?: string
   id: number
   label: string
   point: number[]
 }
 
 type BoundsT = {
-  xMin: number;
-  xMax: number;
-  yMin: number;
-  yMax: number;
+  xMin: number
+  xMax: number
+  yMin: number
+  yMax: number
 }
 
 export default class Chart {
@@ -43,15 +43,16 @@ export default class Chart {
   pixelBounds: BoundsT
   dataBounds: BoundsT
   dataTrans: {
-    offset: [number, number],
+    offset: [number, number]
     scale: number
   }
   dragInfo: {
-    start: [number, number],
-    end: [number, number],
-    offset: [number, number],
+    start: [number, number]
+    end: [number, number]
+    offset: [number, number]
     isDragging: boolean
   }
+  background?: HTMLImageElement
 
   dynamicSample: SampleT | undefined
   nearestSamples: SampleT[] = []
@@ -60,17 +61,23 @@ export default class Chart {
   selectedSample: SampleT | undefined
   #onClick?: (e: MouseEvent, point: SampleT | undefined) => any
 
-  constructor(canvas: HTMLCanvasElement, samples: SampleT[], {
-    // @typescript-eslint/no-unused-vars off
-    axesLabels = ['X', 'Y'],
-    // @typescript-eslint/no-unused-vars off
-    styles = {},
-    onClick
-  }: OptionsT) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    samples: SampleT[],
+    {
+      // @typescript-eslint/no-unused-vars off
+      axesLabels = ['X', 'Y'],
+      // @typescript-eslint/no-unused-vars off
+      styles = {},
+      onClick
+    }: OptionsT
+  ) {
     this.canvas = canvas
     this.samples = samples
     this.options = arguments[2]
+    this.background = this.options.background
     this.ctx = this.canvas.getContext('2d')!
+    this.ctx.imageSmoothingEnabled = false
     this.transparency = 0.58
     this.margin = 40
     this.pixelBounds = this.#getPixelBounds()
@@ -92,7 +99,6 @@ export default class Chart {
     this.#draw()
     /*  this.init() */
     this.#addEventListeners()
-
   }
 
   setActiveSampleById(sampleId: number) {
@@ -113,7 +119,7 @@ export default class Chart {
 
   #addEventListeners() {
     const { canvas, dataTrans, dragInfo } = this
-    canvas.onmousedown = (e) => {
+    canvas.onmousedown = e => {
       const dataLoc = this.#getMousePos(e, 'data')
       dragInfo.start = dataLoc
       dragInfo.isDragging = true
@@ -123,20 +129,30 @@ export default class Chart {
       dragInfo.end = [0, 0]
     }
 
-    canvas.onmousemove = (e) => {
+    canvas.onmousemove = e => {
       const pixelLoc = this.#getMousePos(e)
 
       if (dragInfo.isDragging) {
-        const dataLoc = mathUtils.remapPoint(this.pixelBounds, this.dataBounds, pixelLoc)
+        const dataLoc = mathUtils.remapPoint(
+          this.pixelBounds,
+          this.dataBounds,
+          pixelLoc
+        )
         dragInfo.end = dataLoc
         dragInfo.offset = mathUtils.subtract(dragInfo.start, dragInfo.end)
         const newOffset = mathUtils.add(dataTrans.offset, dragInfo.offset)
         this.#updateDataBounds(newOffset)
       }
-      const samplesPointsPixelBoulds = this.samples.map(s => mathUtils.remapPoint(this.dataBounds, this.pixelBounds, s.point))
-      const nearestIndeces = mathUtils.getNearestPoints([pixelLoc[0], pixelLoc[1] - 8], samplesPointsPixelBoulds)
+      const samplesPointsPixelBoulds = this.samples.map(s =>
+        mathUtils.remapPoint(this.dataBounds, this.pixelBounds, s.point)
+      )
+      const nearestIndeces = mathUtils.getNearestPoints(
+        [pixelLoc[0], pixelLoc[1] - 8],
+        samplesPointsPixelBoulds
+      )
       this.hoveredSample = this.samples[nearestIndeces[0]]
-      const nearestPointPixelBounds = samplesPointsPixelBoulds[nearestIndeces[0]]
+      const nearestPointPixelBounds =
+        samplesPointsPixelBoulds[nearestIndeces[0]]
       const distanceBetweenMouseAndNearest = Math.hypot(
         pixelLoc[0] - nearestPointPixelBounds[0],
         pixelLoc[1] - nearestPointPixelBounds[1]
@@ -147,20 +163,24 @@ export default class Chart {
       this.#draw()
     }
 
-    canvas.onwheel = (e) => {
+    canvas.onwheel = e => {
       e.preventDefault()
       const { dataTrans } = this
       const dir = Math.sign(e.deltaY)
       const stepRatio = 0.08
       const step = dir > 0 ? 1 + stepRatio : 1 - stepRatio
-      if ((dataTrans.scale < 0.002 && dir < 0) || (dataTrans.scale > 30 && dir > 0)) return
+      if (
+        (dataTrans.scale < 0.002 && dir < 0) ||
+        (dataTrans.scale > 30 && dir > 0)
+      )
+        return
       dataTrans.scale *= step
       this.#updateDataBounds(dataTrans.offset, step)
 
       this.#draw()
     }
 
-    canvas.onmouseup = (_e) => {
+    canvas.onmouseup = _e => {
       // const dataLoc = this.#getMousePos(e, 'data')
       // dragInfo.start = dataLoc
       dataTrans.offset = mathUtils.add(dataTrans.offset, dragInfo.offset)
@@ -168,11 +188,14 @@ export default class Chart {
       dragInfo.start = [0, 0]
     }
 
-    canvas.onclick = (e) => {
+    canvas.onclick = e => {
       if (!mathUtils.equalPoints(dragInfo.offset, [0, 0])) return
 
       if (this.hoveredSample) {
-        if (this.selectedSample && this.selectedSample.id === this.hoveredSample.id) {
+        if (
+          this.selectedSample &&
+          this.selectedSample.id === this.hoveredSample.id
+        ) {
           this.selectedSample = undefined
         } else {
           this.selectedSample = this.hoveredSample
@@ -207,8 +230,11 @@ export default class Chart {
     const rect = canvas.getBoundingClientRect()
     const pixelLoc: [number, number] = [
       e.clientX - rect.left,
-      e.clientY - rect.top]
-    return type === 'data' ? mathUtils.remapPoint(this.pixelBounds, dataBounds, pixelLoc) : pixelLoc
+      e.clientY - rect.top
+    ]
+    return type === 'data'
+      ? mathUtils.remapPoint(this.pixelBounds, dataBounds, pixelLoc)
+      : pixelLoc
   }
 
   #getPixelBounds() {
@@ -219,8 +245,6 @@ export default class Chart {
       yMin: canvas.height - margin,
       yMax: margin
     }
-
-
   }
 
   #getDataBounds() {
@@ -250,18 +274,36 @@ export default class Chart {
     const { ctx, canvas } = this
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-
+    if (this.background) {
+      ctx.globalAlpha = 0.2
+      const topLeft = mathUtils.remapPoint(
+        this.dataBounds,
+        this.pixelBounds,
+        [0, 1]
+      )
+      const size = (canvas.width - this.margin * 2) / this.dataTrans.scale
+      ctx.drawImage(this.background, topLeft[0], topLeft[1], size, size)
+      ctx.globalAlpha = 1
+    }
     ctx.globalAlpha = this.transparency
     this.#drawSamples(this.samples)
     if (this.dynamicSample) {
-      const pixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, this.dynamicSample.point)
+      const pixelLoc = mathUtils.remapPoint(
+        this.dataBounds,
+        this.pixelBounds,
+        this.dynamicSample.point
+      )
       graphics.drawPoint(ctx, pixelLoc, {
         radius: 70,
         color: 'rgba(21, 21, 21, 0.7)'
       })
 
-      this.nearestSamples.forEach((nearestSample) => {
-        const nearestPixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, nearestSample.point)
+      this.nearestSamples.forEach(nearestSample => {
+        const nearestPixelLoc = mathUtils.remapPoint(
+          this.dataBounds,
+          this.pixelBounds,
+          nearestSample.point
+        )
 
         ctx.beginPath()
         ctx.moveTo(...pixelLoc)
@@ -273,18 +315,22 @@ export default class Chart {
       })
       graphics.drawImage(
         ctx,
-        this.options.styles[this.dynamicSample.label].image!, pixelLoc
+        this.options.styles[this.dynamicSample.label].image!,
+        pixelLoc
       )
     }
 
-
     ctx.clearRect(0, 0, this.pixelBounds.xMin, this.canvas.height)
 
-    ctx.clearRect(0, this.pixelBounds.yMin, this.canvas.width, this.canvas.height)
+    ctx.clearRect(
+      0,
+      this.pixelBounds.yMin,
+      this.canvas.width,
+      this.canvas.height
+    )
 
     ctx.globalAlpha = 1
     this.#drawAxes()
-
 
     if (this.hoveredSample) {
       this.#emphasizeSample(this.hoveredSample)
@@ -292,18 +338,28 @@ export default class Chart {
     if (this.selectedSample) {
       this.#emphasizeSample(this.selectedSample, 'orange')
     }
-
   }
 
   #emphasizeSample(sample: SampleT, color = 'pink') {
-    const pixelLoc = mathUtils.remapPoint(this.dataBounds, this.pixelBounds, sample.point)
-    const grd = this.ctx.createRadialGradient(pixelLoc[0], pixelLoc[1], 0, pixelLoc[0], pixelLoc[1], 50)
+    const pixelLoc = mathUtils.remapPoint(
+      this.dataBounds,
+      this.pixelBounds,
+      sample.point
+    )
+    const grd = this.ctx.createRadialGradient(
+      pixelLoc[0],
+      pixelLoc[1],
+      0,
+      pixelLoc[0],
+      pixelLoc[1],
+      50
+    )
     grd.addColorStop(0, color)
-    grd.addColorStop(1, "rgba(255, 255, 255, 0)")
+    grd.addColorStop(1, 'rgba(255, 255, 255, 0)')
     this.ctx.globalAlpha = 1
     graphics.drawPoint(this.ctx, pixelLoc, {
       radius: 18,
-      color: grd,
+      color: grd
     })
     this.ctx.globalAlpha = 1
     this.#drawSample(sample)
@@ -340,8 +396,14 @@ export default class Chart {
     ctx.stroke()
     ctx.setLineDash([])
 
-    const dataMin = mathUtils.remapPoint(this.pixelBounds, this.dataBounds, [this.pixelBounds.xMin, this.pixelBounds.yMin])
-    const dataMax = mathUtils.remapPoint(this.pixelBounds, this.dataBounds, [this.pixelBounds.xMax, this.pixelBounds.yMax])
+    const dataMin = mathUtils.remapPoint(this.pixelBounds, this.dataBounds, [
+      this.pixelBounds.xMin,
+      this.pixelBounds.yMin
+    ])
+    const dataMax = mathUtils.remapPoint(this.pixelBounds, this.dataBounds, [
+      this.pixelBounds.xMax,
+      this.pixelBounds.yMax
+    ])
 
     graphics.drawText(ctx, [this.pixelBounds.xMin, this.pixelBounds.yMin], {
       text: `${dataMin[0].toFixed(1)}`,
@@ -388,7 +450,11 @@ export default class Chart {
 
   #drawSample(sample: SampleT) {
     const { ctx, pixelBounds, options } = this
-    const pixelLoc = mathUtils.remapPoint(this.dataBounds, pixelBounds, sample.point)
+    const pixelLoc = mathUtils.remapPoint(
+      this.dataBounds,
+      pixelBounds,
+      sample.point
+    )
     const style = options.styles[sample.label] || {}
 
     switch (options.icon) {
@@ -408,11 +474,9 @@ export default class Chart {
           color: style.color
         })
     }
-
   }
 
   #drawSamples(samples: SampleT[]) {
-    samples.forEach((this.#drawSample.bind(this)))
+    samples.forEach(this.#drawSample.bind(this))
   }
-
 }

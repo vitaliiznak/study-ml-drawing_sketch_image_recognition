@@ -4,15 +4,18 @@ import {
   createResource,
   createSignal,
   onCleanup,
-  type Component,
+  type Component
 } from 'solid-js'
 import { css } from '@emotion/css'
 
-import Chart, { graphics, mathUtils } from '@signumcode/chart'
+import Chart, { graphics } from '@signumcode/chart'
 import { SampleT } from '@signumcode/chart/dist/chart'
+import mathUtilsAll from '@signumcode/ml-libs/dist/mathUtils'
 import DataRows from './DataRows'
 import { BASE_URL } from './constants'
 import SketchPad from './Sketchpad/sketchpad'
+
+const mathUtils = mathUtilsAll
 
 const SKETCPAD_WIDTH = 400
 const SKETCPAD_HEIGHT = 400
@@ -39,7 +42,7 @@ const fetchFeatures = async () => {
     const sampleTesting = {
       ...sample,
       trueLabel: sample.label,
-      label: '?',
+      label: '?'
     }
     return sampleTesting
   })
@@ -84,12 +87,12 @@ const inUse = [
   // },
   {
     name: 'Widths',
-    function: getWidths,
+    function: getWidths
   },
   {
     name: 'Heights',
-    function: getHeights,
-  },
+    function: getHeights
+  }
 ]
 
 const inUseFunctions = inUse.map(feature => feature.function)
@@ -100,7 +103,7 @@ const classify = (
   minMax?: {
     min: number[]
     max: number[]
-  },
+  }
 ) => {
   const samplePoints = samples.map(s => s.point) as [number, number][]
   const normalizedPoint = structuredClone(point)
@@ -115,10 +118,10 @@ const classify = (
       acc[label] = (acc[label] || 0) + 1
       return acc
     },
-    {} as Record<string, number>,
+    {} as Record<string, number>
   )
   const maxLabel = Object.keys(labelCounts).reduce((a, b) =>
-    labelCounts[a] > labelCounts[b] ? a : b,
+    labelCounts[a] > labelCounts[b] ? a : b
   )
   return { predictedLabel: maxLabel, nearestSamples }
 }
@@ -132,7 +135,7 @@ const App: Component = () => {
   const [predictedLabel, setPredictedLabel] = createSignal('')
   const [isSketchpadVisible, setIsScketchpadVisible] = createSignal(false)
   const [emphasizedRowId, setEmphasizedRowId] = createSignal<number | null>(
-    null,
+    null
   )
 
   const [features, { refetch: refetchFeatres }] = createResource(fetchFeatures)
@@ -148,7 +151,7 @@ const App: Component = () => {
     return featuresData.testingSamples.map(sample => {
       const { predictedLabel } = classify(
         sample.point,
-        featuresData.trainingSamples,
+        featuresData.trainingSamples
       )
       sample.isCorrect = sample.trueLabel === predictedLabel
       return sample
@@ -162,14 +165,14 @@ const App: Component = () => {
     const { predictedLabel, nearestSamples } = classify(
       point,
       trainingSamles,
-      featuresMinMax,
+      featuresMinMax
     )
     const label = predictedLabel
     mathUtils.normalizePoints([point], featuresMinMax)
     const sample = {
       id: -1,
       label: label || 'dynamic point',
-      point,
+      point
     }
     chart.showDynamicSample(sample, nearestSamples)
 
@@ -187,33 +190,39 @@ const App: Component = () => {
     const options: ChartConstructorParams[2] = {
       axesLabels: features()!.featuresNames,
       styles: {
-        car: { color: 'gray', text: '🚗', size: 28 },
-        fish: { color: 'red', text: '🐟', size: 28 },
+        car: { color: 'red', text: '🚗', size: 28 },
+        fish: { color: 'blue', text: '🐟', size: 28 },
         house: { color: 'yellow', text: '🏠', size: 28 },
 
         tree: { color: 'green', text: '🌲', size: 28 },
         bicycle: { color: 'cyan', text: '🚲', size: 28 },
-        guitar: { color: 'blue', text: '🎸', size: 28 },
+        guitar: { color: 'lime', text: '🎸', size: 28 },
 
         pencil: { color: 'magenta', text: '🖌️', size: 28 },
         clock: { color: 'lightgray', text: '🕒', size: 28 },
-        ['?']: { color: 'red', text: '❓', size: 28 },
+        ['?']: { color: 'gray', text: '❓', size: 28 }
       },
       icon: 'image',
+      background: new Image(),
+
       onClick: (_e, sample) => {
         if (sample) {
           setEmphasizedRowId(sample.id)
         } else {
           setEmphasizedRowId(null)
         }
-      },
+      }
     }
+    if (options.background) {
+      options.background.src = `${BASE_URL}/dataset/decision_boundary.png`
+    }
+
     graphics.generateImagesAndAddToStyles(options.styles)
 
     setTimeout(() => {
       chart = new Chart(chartCanvas!, [...features()!.trainingSamples], options)
       sketchpad = new SketchPad(sketchpadCanvasRef, {
-        onUpdate: onDrawingsUpdate,
+        onUpdate: onDrawingsUpdate
       })
     }, 400)
   })
@@ -227,7 +236,7 @@ const App: Component = () => {
   })
 
   const onDataRowsSampleClick = (
-    sample: Pick<SampleT, 'id' | 'label' | 'point'>,
+    sample: Pick<SampleT, 'id' | 'label' | 'point'>
   ) => {
     setEmphasizedRowId(sample.id)
     if (sample.label === '?') {

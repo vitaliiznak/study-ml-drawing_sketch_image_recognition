@@ -11,17 +11,16 @@
     "strict": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "Classic",
     "allowSyntheticDefaultImports": true,
+    "composite": true,
     "esModuleInterop": true,
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js",
     "types": [
       "vite/client"
     ],
-    "noEmit": false,
-    "isolatedModules": true,
-    "sourceMap": true
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
   },
   "include": [
     "src"
