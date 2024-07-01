@@ -1,31 +1,27 @@
 // eslint.config.mjs
-import globals from "globals";
-import tseslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
+import globals from 'globals'
+import tseslint from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
 
-import solidPlugin from "eslint-plugin-solid";
-import importPlugin from "eslint-plugin-import";
-import * as emotionPlugin from "@emotion/eslint-plugin";
-
-
+import solidPlugin from 'eslint-plugin-solid'
+import importPlugin from 'eslint-plugin-import'
+import * as emotionPlugin from '@emotion/eslint-plugin'
 
 import prettier from 'eslint-config-prettier'
 import prettierPlugin from 'eslint-plugin-prettier'
 
-
 export default [
   { languageOptions: { globals: globals.browser } },
   {
-    files: ["**/*.{ts,mts,cts,tsx}"],
+    files: ['**/*.{ts,mts,cts,tsx}'],
     languageOptions: {
       parser: tsParser,
-      ecmaVersion: "latest",
-      sourceType: "module",
+      ecmaVersion: 'latest',
+      sourceType: 'module'
     },
 
-
     plugins: {
-      "@typescript-eslint": tseslint,
+      '@typescript-eslint': tseslint,
       solid: solidPlugin,
       import: importPlugin,
       emotion: emotionPlugin,
@@ -76,15 +72,18 @@ export default [
       '@typescript-eslint/no-inferrable-types': 'error',
       '@typescript-eslint/no-misused-new': 'error',
       '@typescript-eslint/no-namespace': 'error',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' }
+      ],
       '@typescript-eslint/no-var-requires': 'error',
       '@typescript-eslint/prefer-namespace-keyword': 'error',
       '@typescript-eslint/triple-slash-reference': 'error',
 
       // Custom Rules
-      'indent': ['error', 2],  // Use 2 spaces for indentation
-      "semi": ["error", "never"],  // Enforce no semicolons
-      '@typescript-eslint/member-delimiter-style': 'off'
+      indent: ['error', 2], // Use 2 spaces for indentation
+      semi: ['error', 'never'], // Enforce no semicolons
+      '@typescript-eslint/member-delimiter-style': 'off',
       // '@typescript-eslint/member-delimiter-style': [
       //   'false',
       //   {
@@ -97,26 +96,27 @@ export default [
       //       requireLast: true
       //     }
       //   }   ]
-      ,
       '@typescript-eslint/explicit-function-return-type': 'off', // Customize as needed
-      '@typescript-eslint/no-explicit-any': 'off',  // Customize as needed
+      '@typescript-eslint/no-explicit-any': 'off', // Customize as needed
 
       // Prettier Rules
-      'prettier/prettier': ['error', {
-        singleQuote: true,
-        semi: false,
-        trailingComma: 'all',
-        arrowParens: 'avoid',
-        endOfLine: 'auto',
-      }],
-    },
-
+      'prettier/prettier': [
+        'error',
+        {
+          singleQuote: true,
+          semi: false,
+          trailingComma: 'none',
+          arrowParens: 'avoid',
+          endOfLine: 'auto'
+        }
+      ]
+    }
   },
   {
-    files: ["**/*.{js,jsx,mjs,cjs}"],
+    files: ['**/*.{js,jsx,mjs,cjs}'],
     languageOptions: {
-      ecmaVersion: "latest",
-      sourceType: "module",
+      ecmaVersion: 'latest',
+      sourceType: 'module'
     },
     plugins: {
       solid: solidPlugin,
@@ -125,20 +125,23 @@ export default [
       prettier: prettierPlugin
     },
     rules: {
-      indent: ["error", 2], // Enforce 2 spaces
-      quotes: ["error", "single"], // Use single quotes
-      semi: ["error", "never"], // Enforce semicolons
+      indent: ['error', 2], // Enforce 2 spaces
+      quotes: ['error', 'single'], // Use single quotes
+      semi: ['error', 'never'], // Enforce semicolons
       // Prettier Rules
-      'prettier/prettier': ['error', {
-        singleQuote: true,
-        semi: false,
-        trailingComma: 'none',
-        arrowParens: 'avoid',
-        endOfLine: 'auto',
-      }],
-    },
+      'prettier/prettier': [
+        'error',
+        {
+          singleQuote: true,
+          semi: false,
+          trailingComma: 'none',
+          arrowParens: 'avoid',
+          endOfLine: 'auto'
+        }
+      ]
+    }
   },
   {
-    ignores: ["**/dist/**/*"],
-  },
-];
+    ignores: ['**/dist/**/*']
+  }
+]

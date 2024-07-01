@@ -1,8 +1,9 @@
 import fs from 'fs'
 import { FEATURES, JSON_DIR, SAMPLES } from './constants.mjs'
-import * as mathUtils from './mathUtils.mts'
-import { SampleT } from './classifiers/knn.mts'
+import mathUtilsAll from '@signumcode/ml-libs/dist/mathUtils'
+import { SampleT } from '@signumcode/ml-libs/dist/classifiers/knn'
 
+const mathUtils = mathUtilsAll.default
 
 const samples = JSON.parse(fs.readFileSync(SAMPLES, 'utf8')) as SampleT[]
 
@@ -41,19 +42,19 @@ export const inUse = [
   // },
   {
     name: 'Widths',
-    function: getWidths,
+    function: getWidths
   },
   {
     name: 'Heights',
-    function: getHeights,
-  },
+    function: getHeights
+  }
 ]
 
 const functions = inUse.map(feature => feature.function)
 
 for (const sample of samples) {
   const paths = JSON.parse(
-    fs.readFileSync(`${JSON_DIR}/${sample.id}.json`, 'utf8'),
+    fs.readFileSync(`${JSON_DIR}/${sample.id}.json`, 'utf8')
   )
   sample.point = functions.map(func => func(paths))
 }
@@ -72,12 +73,12 @@ for (let i = 0; i < samples.length; i++) {
 }
 
 const { min, max } = mathUtils.normalizePoints(
-  training.map(sample => sample.point),
+  training.map(sample => sample.point)
 )
 
 mathUtils.normalizePoints(
   testing.map(sample => sample.point),
-  { min, max },
+  { min, max }
 )
 
 fs.writeFileSync(
@@ -87,7 +88,7 @@ fs.writeFileSync(
       featuresNames,
       samplesMinMax: { min, max },
       trainingSamples: training,
-      testingSamples: testing,
+      testingSamples: testing
       /* : samples.map((sample) => {
         return {
           label: sample.label,
@@ -98,8 +99,8 @@ fs.writeFileSync(
     },
 
     null,
-    2,
-  ),
+    2
+  )
 )
 
 console.log('Feature extraction completed!')

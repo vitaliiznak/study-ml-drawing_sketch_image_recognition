@@ -3,7 +3,11 @@
 packages/shared_data/dataset/
 packages/shared_data/json_objects/
 
+**/dist
+
+**/*.tsbuildinfo
 
 
 # But not .gitkeep
-!.gitkeep
+!**/.gitkeep
+.gitkeep
