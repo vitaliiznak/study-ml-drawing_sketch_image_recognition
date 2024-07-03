@@ -1,6 +1,13 @@
 import fs from 'fs'
-import { FEATURES, JSON_DIR, SAMPLES } from './constants.mjs'
+import {
+  FEATURES,
+  JSON_DIR,
+  SAMPLES,
+  TRAINING_CSV,
+  TESTING_CSV
+} from './constants.mjs'
 import mathUtilsAll from '@signumcode/ml-libs/dist/mathUtils'
+import { toCSV } from '@signumcode/ml-libs/dist/utils'
 import { SampleT } from '@signumcode/ml-libs/dist/classifiers/knn'
 
 const mathUtils = mathUtilsAll.default
@@ -100,6 +107,22 @@ fs.writeFileSync(
 
     null,
     2
+  )
+)
+
+fs.writeFileSync(
+  TRAINING_CSV,
+  toCSV(
+    [...featuresNames, 'Label'],
+    training.map(sample => [...sample.point, sample.label])
+  )
+)
+
+fs.writeFileSync(
+  TESTING_CSV,
+  toCSV(
+    [...featuresNames, 'Label'],
+    testing.map(sample => [...sample.point, sample.label])
   )
 )
 

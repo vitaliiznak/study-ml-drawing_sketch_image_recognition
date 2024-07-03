@@ -12,12 +12,14 @@ export const IMG_DIR = DATASET_DIR + '/img'
 
 export const JS_OBJESCTS_DIR = path.join(
   __dirname,
-  '../../../packages/shared_data/json_objects',
+  '../../../packages/shared_data/json_objects'
 )
 
 export const SAMPLES = DATASET_DIR + '/samples.json'
 export const FEATURES = DATASET_DIR + '/features.json'
 export const DECISION_BOUNDARY = DATASET_DIR + '/decision_boundary.png'
+export const TRAINING_CSV = DATASET_DIR + '/training.csv'
+export const TESTING_CSV = DATASET_DIR + '/testing.csv'
 
 export const LABEL_COLORS = {
   car: 'red',
@@ -27,5 +29,5 @@ export const LABEL_COLORS = {
   bicycle: 'cyan',
   guitar: 'lime',
   pencil: 'magenta',
-  clock: 'lightgray',
+  clock: 'lightgray'
 }
