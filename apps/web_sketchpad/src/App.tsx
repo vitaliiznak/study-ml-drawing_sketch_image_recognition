@@ -11,7 +11,7 @@ const labels = [
   'bicycle',
   'guitar',
   'pencil',
-  'clock',
+  'clock'
 ]
 
 const NameView = ({ onDone }: { onDone: (name: string) => any }) => {
@@ -48,7 +48,7 @@ const App: Component = () => {
   const data = {
     student: '',
     session: crypto.randomUUID(),
-    drawings: {} as { [key: string]: [number, number][][] },
+    drawings: {} as { [key: string]: [number, number][][] }
   }
 
   onMount(() => {
@@ -75,13 +75,14 @@ const App: Component = () => {
     const stringifiedData = JSON.stringify(data, null, 2)
     element.setAttribute(
       'href',
-      'data:text/plain;charset=utf-8,' + encodeURIComponent(stringifiedData),
+      'data:apploication/json;charset=utf-8,' +
+        encodeURIComponent(stringifiedData)
     )
     element.setAttribute('download', `${name()}_${data.session}.json`)
-    element.style.display = 'none'
-    document.body.appendChild(element)
+    // element.style.display = 'none'
+    // document.body.appendChild(element)
     element.click()
-    document.body.removeChild(element)
+    // document.body.removeChild(element)
   }
 
   return (

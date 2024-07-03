@@ -3,7 +3,7 @@ type Point = [number, number]
 const drawPath = (
   ctx: CanvasRenderingContext2D,
   path: Point[],
-  color = 'black',
+  color = 'black'
 ) => {
   ctx.strokeStyle = color
   ctx.lineWidth = 3
@@ -20,7 +20,7 @@ const drawPath = (
 const drawPaths = (
   ctx: CanvasRenderingContext2D,
   paths: Point[][],
-  color = 'black',
+  color = 'black'
 ) => {
   for (const path of paths) {
     drawPath(ctx, path, color)
@@ -48,12 +48,14 @@ export default class SketchPad {
   }
 
   #addEventListeners(): void {
-    this.canvas.onmousedown = (evt: MouseEvent) => {
+    this.canvas.onpointerdown = (evt: PointerEvent) => {
+      evt.preventDefault()
       const mouse = this.#getMouse(evt)
       this.paths.push([mouse])
       this.isDrawing = true
     }
-    this.canvas.onmousemove = (evt: MouseEvent) => {
+    this.canvas.onpointermove = (evt: PointerEvent) => {
+      evt.preventDefault()
       if (this.isDrawing) {
         const mouse = this.#getMouse(evt)
         const lastPath = this.paths[this.paths.length - 1]
@@ -61,20 +63,9 @@ export default class SketchPad {
         this.#redraw()
       }
     }
-    document.onmouseup = () => {
+    document.onpointerup = (evt: PointerEvent) => {
+      evt.preventDefault()
       this.isDrawing = false
-    }
-    this.canvas.ontouchstart = (evt: TouchEvent) => {
-      const loc = evt.touches[0]
-      this.canvas.onmousedown!(new MouseEvent('mousedown', loc))
-    }
-    this.canvas.ontouchmove = (evt: TouchEvent) => {
-      const loc = evt.touches[0]
-      this.canvas.onmousemove!(new MouseEvent('mousemove', loc))
-    }
-    document.ontouchend = evt => {
-      const loc = evt.touches[0]
-      document.onmouseup!(new MouseEvent('mouseup', loc))
     }
   }
 
@@ -87,7 +78,7 @@ export default class SketchPad {
     const rect = this.canvas.getBoundingClientRect()
     return [
       Math.round(evt.clientX - rect.left),
-      Math.round(evt.clientY - rect.top),
+      Math.round(evt.clientY - rect.top)
     ]
   }
 }

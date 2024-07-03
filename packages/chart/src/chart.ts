@@ -172,8 +172,9 @@ export default class Chart {
       if (
         (dataTrans.scale < 0.002 && dir < 0) ||
         (dataTrans.scale > 30 && dir > 0)
-      )
+      ) {
         return
+      }
       dataTrans.scale *= step
       this.#updateDataBounds(dataTrans.offset, step)
 

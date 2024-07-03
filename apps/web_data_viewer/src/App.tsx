@@ -19,7 +19,7 @@ const mathUtils = mathUtilsAll
 
 const SKETCPAD_WIDTH = 400
 const SKETCPAD_HEIGHT = 400
-const k = 24
+const k = 50
 
 export type FeaturesT = {
   trainingSamples: Array<SampleT>

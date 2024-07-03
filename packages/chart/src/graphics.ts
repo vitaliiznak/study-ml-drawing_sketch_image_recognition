@@ -1,36 +1,38 @@
-
 const drawPoint = (
   ctx: CanvasRenderingContext2D,
   loc: [number, number],
   {
     radius = 8,
     color = 'black'
-  }:
-    {
-      radius?: number,
-      color?: string | CanvasGradient | CanvasPattern,
-      icon?: string
-    }) => {
+  }: {
+    radius?: number
+    color?: string | CanvasGradient | CanvasPattern
+    icon?: string
+  }
+) => {
   ctx.beginPath()
   ctx.fillStyle = color
   ctx.arc(loc[0], loc[1], radius, 0, Math.PI * 2)
   ctx.fill()
 }
 
-
-const drawText = (ctx: CanvasRenderingContext2D, loc: [number, number], {
-  text,
-  align = 'center',
-  vAlign = 'middle',
-  size = 28,
-  color = 'black'
-}: {
-  text: string,
-  align?: CanvasTextAlign,
-  vAlign?: CanvasTextBaseline,
-  size?: number,
-  color?: string
-}) => {
+const drawText = (
+  ctx: CanvasRenderingContext2D,
+  loc: [number, number],
+  {
+    text,
+    align = 'center',
+    vAlign = 'middle',
+    size = 28,
+    color = 'black'
+  }: {
+    text: string
+    align?: CanvasTextAlign
+    vAlign?: CanvasTextBaseline
+    size?: number
+    color?: string
+  }
+) => {
   ctx.textAlign = align
   ctx.textBaseline = vAlign
   ctx.font = `${size}px Courier New`
@@ -39,11 +41,22 @@ const drawText = (ctx: CanvasRenderingContext2D, loc: [number, number], {
 
   ctx.fillStyle = color
 
-
   ctx.fillText(text, ...loc)
 }
 
-export type ColorT = 'red' | 'orange' | 'yellow' | 'lime' | 'green' | 'cyan' | 'blue' | 'purple' | 'magenta' | 'pink' | 'lightgray' | 'gray'
+export type ColorT =
+  | 'red'
+  | 'orange'
+  | 'yellow'
+  | 'lime'
+  | 'green'
+  | 'cyan'
+  | 'blue'
+  | 'purple'
+  | 'magenta'
+  | 'pink'
+  | 'lightgray'
+  | 'gray'
 
 const colorHueMap: {
   [key in ColorT]: number
@@ -59,14 +72,14 @@ const colorHueMap: {
   magenta: 300,
   pink: 320,
   lightgray: 0, // No hue adjustment needed
-  gray: 0       // No hue adjustment needed
+  gray: 0 // No hue adjustment needed
 }
 
 const generateImagesAndAddToStyles = (styles: {
   [key: string]: {
-    text?: string,
-    color?: ColorT,
-    size?: number,
+    text?: string
+    color?: ColorT
+    size?: number
     image?: HTMLImageElement
   }
 }) => {
@@ -87,20 +100,28 @@ const generateImagesAndAddToStyles = (styles: {
     ctx.font = `${style.size}px Courier New`
     ctx.beginPath()
 
-    if (colorHueMap[style.color as ColorT] !== undefined && style.color !== 'lightgray' && style.color !== 'gray') {
+    if (
+      colorHueMap[style.color as ColorT] !== undefined &&
+      style.color !== 'lightgray' &&
+      style.color !== 'gray'
+    ) {
       // eslint-disable-next-line
       const hue = -45 + colorHueMap[style.color as ColorT]
       ctx.filter = `
       brightness(2)
-      contrast(0.3)
+      contrast(0.6)
       sepia(1)
       brightness(0.7)
       hue-rotate(${hue}deg)
+      brightness(0.9)
       saturate(3)
       contrast(3)
 `
     } else {
-      ctx.filter = style.color === 'lightgray' ? 'brightness(1.25) grayscale(100%)' : 'grayscale(100%)';
+      ctx.filter =
+        style.color === 'lightgray'
+          ? 'brightness(1.25) grayscale(100%)'
+          : 'grayscale(100%)'
     }
     ctx.fillText(style.text || '', 0, canvas.height)
     ctx.fill()
@@ -110,7 +131,11 @@ const generateImagesAndAddToStyles = (styles: {
   }
 }
 
-const drawImage = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, loc: [number, number]) => {
+const drawImage = (
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  loc: [number, number]
+) => {
   ctx.beginPath()
   ctx.drawImage(
     image,
@@ -125,8 +150,6 @@ const drawImage = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, loc: 
   // ctx.stroke()
   ctx.fill()
 }
-
-
 
 export default {
   drawPoint,
