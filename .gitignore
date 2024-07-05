@@ -8,6 +8,9 @@ packages/shared_data/json_objects/
 **/*.tsbuildinfo
 
 
+
+
 # But not .gitkeep
 !**/.gitkeep
 .gitkeep
+**/__pycache__/

@@ -134,7 +134,7 @@ const App: Component = () => {
 
   const [predictedLabel, setPredictedLabel] = createSignal('')
   const [isSketchpadVisible, setIsScketchpadVisible] = createSignal(false)
-  const [emphasizedRowId, setEmphasizedRowId] = createSignal<number | null>(
+  const [emphasizedSampleId, setEmphasizedRowId] = createSignal<number | null>(
     null
   )
 
@@ -274,7 +274,7 @@ const App: Component = () => {
             testingSamples={testingSamples}
             trainingSamples={trainingSamples}
             featuresNames={features()?.featuresNames || []}
-            emphasizedRowId={emphasizedRowId}
+            emphasizedSampleId={emphasizedSampleId}
             onSample={onDataRowsSampleClick}
           />
         </div>

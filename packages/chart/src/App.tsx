@@ -80,6 +80,7 @@ const App: Component = () => {
 
   createEffect(() => {
     if (emphasizedRowId() && tBodyRef) {
+      console.log('here')
       const scrollTarget = tBodyRef.getElementsByClassName('emphasized-row')[0]
       if (isElementInViewport(scrollTarget)) return
       scrollTarget.scrollIntoView({

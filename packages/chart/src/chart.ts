@@ -337,7 +337,7 @@ export default class Chart {
       this.#emphasizeSample(this.hoveredSample)
     }
     if (this.selectedSample) {
-      this.#emphasizeSample(this.selectedSample, 'orange')
+      this.#emphasizeSample(this.selectedSample, 'green')
     }
   }
 
@@ -356,10 +356,10 @@ export default class Chart {
       50
     )
     grd.addColorStop(0, color)
-    grd.addColorStop(1, 'rgba(255, 255, 255, 0)')
+    grd.addColorStop(1, 'rgba(255, 255, 255, 0.24)')
     this.ctx.globalAlpha = 1
     graphics.drawPoint(this.ctx, pixelLoc, {
-      radius: 18,
+      radius: 25,
       color: grd
     })
     this.ctx.globalAlpha = 1

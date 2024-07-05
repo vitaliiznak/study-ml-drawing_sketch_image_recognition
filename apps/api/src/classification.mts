@@ -1,6 +1,6 @@
 import { DECISION_BOUNDARY, FEATURES, LABEL_COLORS } from './constants.mjs'
 import { printProgress } from './utils.mjs'
-import { KNN, SampleT } from '@signumcode/ml-libs/dist/classifiers/knn'
+import KNN, { SampleT } from '@signumcode/ml-libs/dist/classifiers/knn'
 import fs from 'fs'
 import { createCanvas } from 'canvas'
 

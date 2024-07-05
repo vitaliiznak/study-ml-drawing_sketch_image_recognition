@@ -4,7 +4,7 @@ import {
   createMemo,
   createSignal,
   useTransition,
-  type Component,
+  type Component
 } from 'solid-js'
 import { css, cx } from '@emotion/css'
 import { SampleT } from '@signumcode/chart/dist/chart'
@@ -48,6 +48,28 @@ const tabsStyles = css`
   }
 `
 
+const emphasizedSampleStyle = cx(
+  css`
+    background-color: rgba(0, 128, 0, 0.5) !important;
+    & img,
+    & div {
+      background-color: rgba(0, 128, 0, 0.5) !important;
+    }
+  `,
+  'emphasized-sample'
+)
+
+const excludedSampleStyle = cx(
+  css`
+    background-color: red !important;
+    & img,
+    & div {
+      background-color: red !important;
+    }
+  `,
+  'excluded-sample'
+)
+
 function isElementInViewport(el: HTMLElement | Element) {
   const rect = el.getBoundingClientRect()
   return (
@@ -58,17 +80,6 @@ function isElementInViewport(el: HTMLElement | Element) {
     rect.right <= (window.innerWidth || document.documentElement.clientWidth)
   )
 }
-
-const emphasizeSampleStyle = cx(
-  css`
-    background-color: orange !important;
-    & img,
-    & div {
-      background-color: orange !important;
-    }
-  `,
-  'emphasized-row',
-)
 
 const isCorrectSampleStyle = css`
   label: isCorrectSampleStyle;
@@ -81,13 +92,15 @@ const DataRows: Component<{
     (SampleT & { trueLabel: string; isCorrect?: boolean })[]
   >
   trainingSamples: Accessor<Array<SampleT>>
-  emphasizedRowId: Accessor<number | null>
+  emphasizedSampleId: Accessor<number | null>
   onSample: (sample: SampleT) => void
 }> = props => {
   let dataRowsContainerRef: HTMLElement | null = null
   let trainingDataStartRef: HTMLElement | null = null
   let testingDataStartRef: HTMLElement | null = null
   const { testingSamples, trainingSamples, featuresNames } = props
+
+  const [excludedSamples, setExcludedSamples] = createSignal(new Set())
 
   const [tab, setTab] = createSignal<'TRAINING' | 'TESTING'>('TRAINING')
   const [pending, start] = useTransition()
@@ -97,9 +110,9 @@ const DataRows: Component<{
     return {
       samplesGroupedByStudentId: Object.groupBy(
         trainingSamples()!,
-        type => type.studentId!,
+        type => type.studentId!
       ),
-      featuresNames,
+      featuresNames
     }
   })
 
@@ -108,20 +121,20 @@ const DataRows: Component<{
     return {
       samplesGroupedByStudentId: Object.groupBy(
         testingSamples(),
-        type => type.studentId!,
+        type => type.studentId!
       ),
-      featuresNames: featuresNames as string[],
+      featuresNames: featuresNames as string[]
     }
   })
 
   createEffect(() => {
-    if (props.emphasizedRowId() && dataRowsContainerRef) {
+    if (props.emphasizedSampleId() && dataRowsContainerRef) {
       const scrollTarget =
-        dataRowsContainerRef.getElementsByClassName('emphasized-row')[0]
+        dataRowsContainerRef.getElementsByClassName('emphasized-sample')[0]
       if (isElementInViewport(scrollTarget)) return
       scrollTarget.scrollIntoView({
         behavior: 'smooth',
-        block: 'center',
+        block: 'center'
       })
     }
   })
@@ -130,7 +143,7 @@ const DataRows: Component<{
     const toReturn = {
       totalCount: 0,
       correctCount: 0,
-      accuracy: 0,
+      accuracy: 0
     }
 
     if (!testingSamples().length) return toReturn
@@ -144,85 +157,117 @@ const DataRows: Component<{
     return toReturn
   })
 
-  const onSample = (sample: {
-    id: number
-    label: string
-    studentName?: string
-    studentId?: string
-    point: number[]
-  }) => {
+  const onSample = (sample: SampleT) => {
     props.onSample(sample)
   }
 
-  const dataRowRenderer = (
-    entry: [
-      string,
-      Array<SampleT & { trueLabel?: string; isCorrect?: boolean }> | undefined,
-    ],
-  ) => {
-    const [studentId, studentSamples] = entry
-    const studentName = studentSamples![0]!.studentName
-
-    return (
-      <div
-        class={[
-          css`
-            display: flex;
-            align-items: center;
-            ${flaggedUsers.includes(studentName!) ? 'filter: blur(5px);' : ''}
-          `,
-        ].join(' ')}
-      >
-        <label
-          class={css`
-            font-size: 28;
-            font-weight: 700;
-            width: 100px;
-            overflow: hidden;
-          `}
-        >
-          {studentName}
-        </label>
-
-        {studentSamples!.map(sample => {
-          return (
-            <div
-              class={[
-                css`
-                  background-color: whitesmoke;
-                  margin: 4px;
-                `,
-                sample.isCorrect ? isCorrectSampleStyle : '',
-                props.emphasizedRowId() === sample.id
-                  ? emphasizeSampleStyle
-                  : '',
-              ].join(' ')}
-              onClick={() => {
-                onSample(sample)
-              }}
-            >
-              <div
-                class={css`
-                  text-align: center;
-                  width: 100%;
-                  overflow: hidden;
-                `}
-              >
-                {sample.label}
-              </div>
-              <img
-                class={css`
-                  width: 100px;
-                `}
-                src={`${BASE_URL}/img/${sample.id}.png`}
-                alt={sample.label}
-              ></img>
-            </div>
-          )
-        })}
-      </div>
-    )
+  const onSampleExclusionToggle = (sample: SampleT) => {
+    if (excludedSamples().has(sample.id)) {
+      setExcludedSamples(prevSet => {
+        const newSet = new Set(prevSet)
+        newSet.delete(sample.id)
+        return newSet
+      })
+    } else {
+      setExcludedSamples(prevSet => {
+        const newSet = new Set(prevSet)
+        newSet.add(sample.id)
+        return newSet
+      })
+    }
   }
+
+  const makeDataRowRenderer = (isTrainingSample = false) => {
+    return (
+      entry: [
+        string,
+        (
+          | Array<
+              SampleT & {
+                trueLabel?: string
+                isCorrect?: boolean
+                studentName?: string
+              }
+            >
+          | undefined
+        )
+      ]
+    ) => {
+      const [studentId, studentSamples] = entry
+      const studentName = studentSamples![0]!.studentName
+
+      return (
+        <div
+          class={[
+            css`
+              display: flex;
+              align-items: center;
+              ${flaggedUsers.includes(studentName!) ? 'filter: blur(5px);' : ''}
+            `
+          ].join(' ')}
+        >
+          <label
+            class={css`
+              font-size: 28;
+              font-weight: 700;
+              width: 100px;
+              overflow: hidden;
+            `}
+          >
+            {studentName}
+          </label>
+
+          {studentSamples!.map(sample => {
+            let onDoubleClick = undefined
+            if (isTrainingSample) {
+              onDoubleClick = () => {
+                onSampleExclusionToggle(sample)
+              }
+            }
+            return (
+              <div
+                class={[
+                  css`
+                    background-color: whitesmoke;
+                    margin: 4px;
+                  `,
+                  sample.isCorrect ? isCorrectSampleStyle : '',
+                  excludedSamples().has(sample.id) ? excludedSampleStyle : '',
+                  props.emphasizedSampleId() === sample.id
+                    ? emphasizedSampleStyle
+                    : ''
+                ].join(' ')}
+                onDblClick={onDoubleClick}
+                onClick={() => {
+                  onSample(sample)
+                }}
+              >
+                <div
+                  class={css`
+                    text-align: center;
+                    width: 100%;
+                    overflow: hidden;
+                  `}
+                >
+                  {sample.label}
+                </div>
+                <img
+                  class={css`
+                    width: 100px;
+                  `}
+                  src={`${BASE_URL}/img/${sample.id}.png`}
+                  alt={sample.label}
+                ></img>
+              </div>
+            )
+          })}
+        </div>
+      )
+    }
+  }
+
+  const trainingDataRowsRenderer = makeDataRowRenderer(true)
+  const testingDataRowsRenderer = makeDataRowRenderer(false)
 
   const updateTab = (tabKey: 'TRAINING' | 'TESTING') => () => {
     const offset = 80
@@ -298,11 +343,19 @@ const DataRows: Component<{
             }}
           >
             Training data
+            <br />
+            <div
+              class={css`
+                color: red;
+              `}
+            >
+              Double click on sample to data point excluson/inclusion
+            </div>
           </h4>
           {trainingFeaturesGroupedByStudentId().samplesGroupedByStudentId &&
             Object.entries(
-              trainingFeaturesGroupedByStudentId().samplesGroupedByStudentId!,
-            ).map(dataRowRenderer)}
+              trainingFeaturesGroupedByStudentId().samplesGroupedByStudentId!
+            ).map(trainingDataRowsRenderer)}
           <h4
             ref={ref => {
               testingDataStartRef = ref
@@ -312,8 +365,8 @@ const DataRows: Component<{
           </h4>
           {testingFeaturesGroupedByStudentId().samplesGroupedByStudentId &&
             Object.entries(
-              testingFeaturesGroupedByStudentId().samplesGroupedByStudentId!,
-            ).map(dataRowRenderer)}
+              testingFeaturesGroupedByStudentId().samplesGroupedByStudentId!
+            ).map(testingDataRowsRenderer)}
         </div>
       </div>
     </div>
