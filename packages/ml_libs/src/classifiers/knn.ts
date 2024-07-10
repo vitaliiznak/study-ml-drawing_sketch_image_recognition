@@ -7,7 +7,7 @@ export type SampleT = {
   studentName: string
 }
 
-export default class KNN {
+export class KNN {
   samples: SampleT[]
   k: number
 

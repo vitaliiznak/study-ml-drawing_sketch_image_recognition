@@ -17,4 +17,14 @@
 // export const SAMPLES = DATASET_DIR + '/samples.json'
 // export const FEATURES = DATASET_DIR + '/features.json'
 
+export const CLASSES = [
+  'car',
+  'fish',
+  'house',
+  'tree',
+  'bicycle',
+  'guitar',
+  'pencil',
+  'clock'
+]
 export const BASE_URL = 'http://localhost:3080'

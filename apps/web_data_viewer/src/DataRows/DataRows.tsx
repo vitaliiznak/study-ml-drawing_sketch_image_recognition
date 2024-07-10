@@ -349,7 +349,7 @@ const DataRows: Component<{
                 color: red;
               `}
             >
-              Double click on sample to data point excluson/inclusion
+              ❗ Double click on sample to data point excluson/inclusion ❗
             </div>
           </h4>
           {trainingFeaturesGroupedByStudentId().samplesGroupedByStudentId &&

@@ -1,6 +1,6 @@
 import { DECISION_BOUNDARY, FEATURES, LABEL_COLORS } from './constants.mjs'
 import { printProgress } from './utils.mjs'
-import KNN, { SampleT } from '@signumcode/ml-libs/dist/classifiers/knn'
+import { SampleT, KNN } from '@signumcode/ml-libs/dist/classifiers/knn'
 import fs from 'fs'
 import { createCanvas } from 'canvas'
 
@@ -20,7 +20,7 @@ const features = JSON.parse(fs.readFileSync(FEATURES, 'utf8')) as FeaturesT
 
 const trainingSamples = features.trainingSamples
 
-const kNN = new KNN(trainingSamples, 50)
+const kNN = new KNN(trainingSamples, 80)
 
 let totalCount = 0
 let correctCount = 0
@@ -37,7 +37,7 @@ for (const sample of features.testingSamples) {
 console.log(`\nAccuracy: ${(correctCount / totalCount) * 100}%`)
 
 console.log('Generating decision boundary...')
-const canvas = createCanvas(100, 100)
+const canvas = createCanvas(180, 180)
 const ctx = canvas.getContext('2d')
 
 for (let x = 0; x < canvas.width; x++) {
