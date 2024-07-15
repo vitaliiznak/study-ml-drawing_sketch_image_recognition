@@ -1,11 +1,9 @@
 import {
-  Accessor,
   createEffect,
   createMemo,
   createResource,
   createSignal,
   onCleanup,
-  onMount,
   type Component
 } from 'solid-js'
 import { css } from '@emotion/css'
@@ -16,6 +14,7 @@ import mathUtilsAll from '@signumcode/ml-libs/dist/mathUtils'
 import DataRows from './DataRows'
 import { BASE_URL, CLASSES } from './constants'
 import SketchPad from './Sketchpad/sketchpad'
+import ConfusionMatrix from './ConfusionMatrix/ConfusionMatrix'
 
 const mathUtils = mathUtilsAll
 
@@ -106,111 +105,6 @@ const inUse = [
 
 const inUseFunctions = inUse.map(feature => feature.function)
 
-const ConfusionMatrix: Component<{
-  samples: Accessor<
-    Array<
-      SampleT & {
-        trueLabel: string
-        isCorrect: boolean
-        studentName: string
-        predictedLabel: string
-      }
-    >
-  >
-  classes: string[]
-}> = ({ samples, classes }) => {
-  let containerRef: HTMLTableElement
-  const [cellWidth, setCellWidth] = createSignal(0)
-  const [cellHeight, setCellHeight] = createSignal(0)
-  const N = classes.length
-  const matrix = createMemo(() => {
-    const matrixToReturn = Array.from({ length: N }, () => Array(N).fill(0))
-
-    for (const s of samples()) {
-      const i = classes.indexOf(s.trueLabel)
-      const j = classes.indexOf(s.predictedLabel)
-
-      matrixToReturn[i][j]++
-    }
-    return matrixToReturn
-  })
-  onMount(() => {
-    if (containerRef) {
-      setCellWidth(containerRef.offsetWidth)
-      setCellHeight(containerRef.offsetHeight)
-    }
-  })
-
-  // const cellSize =
-  return (
-    <div
-      class={css`
-        display: relative;
-        height: 100%;
-        width: 100%;
-      `}
-    >
-      <div>Predicted Class</div>
-      <table
-        ref={r => {
-          containerRef = r
-        }}
-        class={css`
-          border-collapse: collapse;
-          text-align: center;
-          margin-left: ${cellWidth()}px;
-          margin-top: ${cellHeight()}px;
-          height: 100%;
-          width: 100%;
-        `}
-      >
-        <tbody>
-          <tr>
-            <td
-              class={css`
-                height: ${cellHeight()}px;
-                width: ${cellWidth()}px;
-              `}
-            ></td>
-            {classes.map(c => (
-              <td
-                class={css`
-                  height: ${cellHeight()}px;
-                  width: ${cellWidth()}px;
-                `}
-              >
-                {c}
-              </td>
-            ))}
-          </tr>
-          {matrix().map((row, i) => (
-            <tr>
-              <td
-                class={css`
-                  height: ${cellHeight()}px;
-                  width: ${cellWidth()}px;
-                `}
-              >
-                {classes[i]}
-              </td>
-              {row.map((count, j) => (
-                <td
-                  class={css`
-                    height: ${cellHeight()}px;
-                    width: ${cellWidth()}px;
-                  `}
-                >
-                  {count}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
 const classify = (
   point: number[],
   samples: SampleT[],
@@ -246,6 +140,20 @@ const App: Component = () => {
 
   let chartCanvasRef: HTMLCanvasElement | undefined
   let sketchpad: SketchPad
+
+  const stylesForClasses = {
+    car: { color: 'red', text: '🚗', size: 28 },
+    fish: { color: 'blue', text: '🐟', size: 28 },
+    house: { color: 'yellow', text: '🏠', size: 28 },
+
+    tree: { color: 'green', text: '🌲', size: 28 },
+    bicycle: { color: 'cyan', text: '🚲', size: 28 },
+    guitar: { color: 'lime', text: '🎸', size: 28 },
+
+    pencil: { color: 'magenta', text: '🖌️', size: 28 },
+    clock: { color: 'lightgray', text: '🕒', size: 28 },
+    ['?']: { color: 'gray', text: '❓', size: 28 }
+  }
 
   const [predictedLabel, setPredictedLabel] = createSignal('')
   const [isSketchpadVisible, setIsScketchpadVisible] = createSignal(false)
@@ -305,24 +213,11 @@ const App: Component = () => {
     if (features.loading || chartCanvasRef === undefined) {
       return null // or some loading state/data
     }
-    const options: ChartConstructorParams[2] = {
+    const chartOptions: ChartConstructorParams[2] = {
       axesLabels: features()!.featuresNames,
-      styles: {
-        car: { color: 'red', text: '🚗', size: 28 },
-        fish: { color: 'blue', text: '🐟', size: 28 },
-        house: { color: 'yellow', text: '🏠', size: 28 },
-
-        tree: { color: 'green', text: '🌲', size: 28 },
-        bicycle: { color: 'cyan', text: '🚲', size: 28 },
-        guitar: { color: 'lime', text: '🎸', size: 28 },
-
-        pencil: { color: 'magenta', text: '🖌️', size: 28 },
-        clock: { color: 'lightgray', text: '🕒', size: 28 },
-        ['?']: { color: 'gray', text: '❓', size: 28 }
-      },
       icon: 'image',
       background: new Image(),
-
+      styles: stylesForClasses as ChartConstructorParams[2]['styles'],
       onClick: (_e, sample) => {
         if (sample) {
           setEmphasizedRowId(sample.id)
@@ -331,17 +226,17 @@ const App: Component = () => {
         }
       }
     }
-    if (options.background) {
-      options.background.src = `${BASE_URL}/dataset/decision_boundary.png`
+    if (chartOptions.background) {
+      chartOptions.background.src = `${BASE_URL}/dataset/decision_boundary.png`
     }
 
-    graphics.generateImagesAndAddToStyles(options.styles)
+    graphics.generateImagesAndAddToStyles(chartOptions.styles)
 
     setTimeout(() => {
       chart = new Chart(
         chartCanvasRef!,
         [...features()!.trainingSamples],
-        options
+        chartOptions
       )
       // confusion = new Confusion(
       //   confusionCanvasRef!,
@@ -414,8 +309,9 @@ const App: Component = () => {
             min-width: 800px;
             width: fit-content;
             position: fixed;
-            top: 90px;
-            right: 0;
+            top: 110px;
+            right: 10px;
+            z-index: 1000;
           `}
         >
           <div
@@ -472,84 +368,81 @@ const App: Component = () => {
             </button>
           </div>
 
-          <div>
-            <div
+          <div
+            class={css`
+              label: buttons-container;
+              position: absolute;
+              top: -30px;
+              right: 40px;
+            `}
+          >
+            <button
+              onClick={() => {
+                setIsScketchpadVisible(!isSketchpadVisible())
+              }}
               class={css`
-                position: absolute;
-                top: -30px;
-                right: 0px;
+                background-color: orange;
+                border-color: yellow;
+                color: whitesmoke;
+                font-size: 20px;
+                font-weight: bold;
+                z-index: 300;
               `}
             >
-              <button
-                onClick={() => {
-                  setIsScketchpadVisible(!isSketchpadVisible())
-                }}
-                class={css`
-                  background-color: orange;
-                  border-color: yellow;
-                  color: whitesmoke;
-                  font-size: 20px;
-                  font-weight: bold;
-                  z-index: 300;
-                `}
-              >
-                Toggle Sketchpad
-              </button>
-              <button
-                onClick={() => {
-                  setPlotType(prevType =>
-                    prevType === 'featuresPlot'
-                      ? 'confusionPlot'
-                      : 'featuresPlot'
-                  )
-                }}
-                class={css`
-                  margin-left: 10px;
-                  background-color: orange;
-                  border-color: yellow;
-                  color: whitesmoke;
-                  font-size: 20px;
-                  font-weight: bold;
-                  z-index: 300;
-                `}
-              >
-                {plotType() === 'featuresPlot'
-                  ? 'Show Confusion Matrix'
-                  : 'Show Classification Plot'}
-              </button>
-            </div>
-
-            <div
+              Toggle Sketchpad
+            </button>
+            <button
+              onClick={() => {
+                setPlotType(prevType =>
+                  prevType === 'featuresPlot' ? 'confusionPlot' : 'featuresPlot'
+                )
+              }}
               class={css`
-                background-color: white;
-                z-index: 100;
+                margin-left: 10px;
+                background-color: orange;
+                border-color: yellow;
+                color: whitesmoke;
+                font-size: 20px;
+                font-weight: bold;
+                z-index: 300;
               `}
             >
-              <div
-                class={css`
-                  label: confusion-chart-canvas;
-                  display: ${plotType() === 'confusionPlot' ? 'block' : 'none'};
-                  width: 800px;
-                  height: 800px;
-                  margin: 0;
-                `}
-              >
-                <ConfusionMatrix samples={testingSamples} classes={CLASSES} />
-              </div>
-
-              <canvas
-                class={css`
-                  label: features-chart-canvas;
-                  display: ${plotType() === 'featuresPlot' ? 'block' : 'none'};
-                `}
-                width={800}
-                height={800}
-                ref={ref => {
-                  chartCanvasRef = ref
-                }}
-              ></canvas>
-            </div>
+              {plotType() === 'featuresPlot'
+                ? 'Show Confusion Matrix'
+                : 'Show Classification Plot'}
+            </button>
           </div>
+
+          <div
+            class={css`
+              label: confusion-chart-canvas;
+              background-color: white;
+              z-index: 100;
+              display: ${plotType() === 'confusionPlot' ? 'block' : 'none'};
+              height: 770px !important;
+              width: 770px !important;
+            `}
+          >
+            <ConfusionMatrix
+              samples={testingSamples}
+              classes={CLASSES}
+              stylesForClasses={stylesForClasses}
+            />
+          </div>
+
+          <canvas
+            class={css`
+              label: features-chart-canvas;
+              background-color: white;
+              z-index: 100;
+              display: ${plotType() === 'featuresPlot' ? 'block' : 'none'};
+            `}
+            width={810}
+            height={810}
+            ref={ref => {
+              chartCanvasRef = ref
+            }}
+          ></canvas>
         </div>
       </div>
     </div>
